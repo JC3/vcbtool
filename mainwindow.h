@@ -22,11 +22,10 @@ private slots:
     void on_btnLoadROMFile_clicked();
     void on_spnROMWordSize_valueChanged(int arg1);
     void on_spnROMDataBits_valueChanged(int arg1);
-
     void on_btnROMGenerate_clicked();
-
 private:
-    Ui::MainWindow *ui;
+    Ui::MainWindow *ui_;
+    QByteArray romdata_;
     Blueprint::Layer selectedConversionLayer () const;
 };
 #endif // MAINWINDOW_H
