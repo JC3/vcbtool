@@ -66,6 +66,18 @@ Blueprint::Blueprint (int width, int height, QObject *parent) :
     layers_[DecoOff] = bpImage.copy();
 }
 
+Blueprint::Blueprint (QImage bpImage, Layer layer, QObject *parent) :
+    QObject(parent)
+{
+    bpImage = bpImage.copy();
+    bpImage.convertTo(QImage::Format_RGBA8888);
+    QImage emptyImage(bpImage.width(), bpImage.height(), QImage::Format_RGBA8888);
+    emptyImage.fill(0);
+    layers_[Logic] = (layer == Logic ? bpImage : emptyImage).copy();
+    layers_[DecoOn] = (layer == DecoOn ? bpImage : emptyImage).copy();
+    layers_[DecoOff] = (layer == DecoOff ? bpImage : emptyImage).copy();
+}
+
 Blueprint::Blueprint (QString bpString, QObject *parent) :
     QObject(parent),
     bpString_(bpString)

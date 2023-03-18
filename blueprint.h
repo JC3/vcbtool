@@ -65,6 +65,7 @@ public:
         DecoOff = 2
     };
     explicit Blueprint (QString bpString, QObject *parent = nullptr);
+    Blueprint (QImage bpImage, Layer layer, QObject *parent = nullptr);
     Blueprint (int width, int height, QObject *parent = nullptr);
     QImage layer (Layer which) const { return layers_[which]; }
     void setPixel (Layer which, int x, int y, Ink ink);
