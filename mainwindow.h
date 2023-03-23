@@ -23,6 +23,8 @@ private slots:
     void on_spnROMWordSize_valueChanged(int arg1);
     void on_spnROMDataBits_valueChanged(int arg1);
     void on_btnROMGenerate_clicked();
+    void on_btnNetlistGenerate_clicked();
+
 private:
     Ui::MainWindow *ui_;
     QByteArray romdata_;

@@ -2,8 +2,10 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDebug>
 #include <stdexcept>
 #include "circuits.h"
+#include "compiler.h"
 
 using std::runtime_error;
 
@@ -134,5 +136,21 @@ void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 void MainWindow::on_spnROMDataBits_valueChanged(int arg1)
 {
     //ui_->cbROMBitOrder->setEnabled(arg1 > 1);
+}
+
+
+void MainWindow::on_btnNetlistGenerate_clicked()
+{
+    try {
+        Blueprint bp(ui_->txtNetlistBP->toPlainText());
+        Compiler c(&bp);
+        //qDebug().noquote() << c.buildDot().join("\n");
+        QFile f("dotgraph.txt");
+        f.open(QFile::WriteOnly  |QFile::Text);
+        f.write(c.buildDot().join("\n").toLatin1());
+        f.close();
+    } catch (const std::exception &x) {
+        QMessageBox::critical(this, "Error", x.what());
+    }
 }
 

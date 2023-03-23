@@ -15,10 +15,10 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+    <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -319,6 +319,59 @@
            <string>Load file, set options, press 'Generate'.</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabNetlist">
+       <attribute name="title">
+        <string>Generate Netlist</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0" colspan="4">
+         <widget class="QPlainTextEdit" name="txtNetlistBP">
+          <property name="plainText">
+           <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
+          </property>
+          <property name="placeholderText">
+           <string>Blueprint string</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Format:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="cbNetlistFormat">
+          <item>
+           <property name="text">
+            <string>EDIF</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="btnNetlistGenerate">
+          <property name="text">
+           <string>Generate</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>397</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

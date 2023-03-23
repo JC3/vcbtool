@@ -1,0 +1,434 @@
+#include "compiler.h"
+#include <stdexcept>
+#include <QSet>
+#include <QMap>
+#include <QDebug>
+#include <QElapsedTimer>
+
+using std::runtime_error;
+
+Compiler::Compiler (const Blueprint *bp, QObject *parent) :
+    QObject(parent)
+{
+    compileBlueprint(bp);
+}
+
+void Compiler::compileBlueprint (const Blueprint *bp) {
+
+    QElapsedTimer timer;
+    timer.start();
+
+    const std::function<int(QVector<int>&,int)> find = [&find] (QVector<int> &ds, int a) {
+        if (ds[a] != a) {
+            ds[a] = find(ds, ds[a]); // path compression
+            return ds[a];
+        } else {
+            return a;
+        }
+    };
+
+    const auto unite = [&find] (QVector<int> &ds, int a, int b) {
+        int pa = find(ds, a);
+        int pb = find(ds, b);
+        if (pa != pb)
+            ds[pb] = pa; // naive unbalanced
+    };
+
+    const int width = bp->width();
+    const int height = bp->height();
+
+    const auto index = [&width] (int x, int y) {
+        return y * width + x;
+    };
+
+    // --- initialize
+
+    // translate qcolors to compiler component ids
+    QImage bpImage = bp->layer(Blueprint::Logic);
+    QVector<QVector<Component> > logic(height);
+    for (int y = 0; y < height; ++ y) {
+        logic[y] = QVector<Component>(width);
+        for (int x = 0; x < width; ++ x)
+            logic[y][x] = Comp(bp->get(x, y));
+    }
+
+    // initially, every pixel has a unique id
+    QVector<int> comps(width * height);
+    for (int k = 0; k < comps.size(); ++ k)
+        comps[k] = k;
+
+    // --- pass: merge all pixels into components
+
+    // in first pass, make note of inks that touch busses/tunnels/meshes and also r/w
+    using Conn = QPair<QPoint,QPoint>; // pair(bus/tunnel/mesh, touching ink)
+    using Conns = QVector<Conn>;
+    Conns busConns, tunnelConns, meshConns, readConns, writeConns;
+
+    // also make note of global roots so we can unify them all into single components
+    int wirelessRoot[4] = { -1, -1, -1, -1 }, meshRoot = -1;
+
+    const auto addConn = [] (Component p, Component n, QPoint qp, QPoint qn, Conns &conns, auto f) {
+        if (!IsEmpty(n) && !f(n) && !IsCross(n) && f(p)) conns.append({qp, qn});
+        if (!IsEmpty(p) && !f(p) && !IsCross(p) && f(n)) conns.append({qn, qp});
+    };
+
+    const auto checkPass1 = [&] (int px, int py, int nx, int ny) {
+        // merge pixels into an entity
+        Component p = logic[py][px], n = logic[ny][nx];
+        if (Same(p, n)) unite(comps, index(px, py), index(nx, ny));
+        // note bus/tunnel/mesh connections
+        QPoint qp(px, py), qn(nx, ny);
+        addConn(p, n, qp, qn, busConns, IsBus);
+        addConn(p, n, qp, qn, tunnelConns, IsTunnel);
+        addConn(p, n, qp, qn, meshConns, IsMesh);
+        addConn(p, n, qp, qn, readConns, IsRead);
+        addConn(p, n, qp, qn, writeConns, IsWrite);
+    };
+
+    const auto outside = [] (int v, int hi) { // outside range [0, hi)
+        return v < 0 || v >= hi;
+    };
+
+    const auto uniteCross = [&] (int ax, int ay, int bx, int by) {
+        if (!(outside(ax, width) || outside(ay, height) || outside(bx, width) || outside(by, height))) {
+            Component a = logic[ay][ax], b = logic[by][bx];
+            if (Same(a, b)) unite(comps, index(ax, ay), index(bx, by));
+        }
+    };
+
+    // build initial connected components
+    for (int y = 0; y < height; ++ y) {
+        for (int x = 0; x < width; ++ x) {
+            // merge neighbors
+            if (x < width - 1) checkPass1(x, y, x+1, y);
+            if (y < height - 1) checkPass1(x, y, x, y+1);
+            // merge across crosses
+            if (IsCross(logic[y][x])) {
+                uniteCross(x-1, y, x+1, y);
+                uniteCross(x, y-1, x, y+1);
+            }
+            // merge all global components
+            Component p = logic[y][x];
+            if (IsWifi(p)) {
+                int channel = WirelessIndex(p);
+                if (wirelessRoot[channel] == -1)
+                    wirelessRoot[channel] = index(x, y);
+                else
+                    unite(comps, index(x, y), wirelessRoot[channel]);
+            } else if (IsMesh(p)) {
+                if (meshRoot == -1)
+                    meshRoot = index(x, y);
+                else
+                    unite(comps, index(x, y), meshRoot);
+            }
+        }
+    }
+
+    // flatten everything, it'll make the rest of the code a bit simpler and shouldn't
+    // take too long. if it does take too long, performance can be improved by a) *not*
+    // flattening everything and b) keeping the tree balanced in unite().
+    for (int k = 0; k < comps.size(); ++ k)
+        comps[k] = find(comps, comps[k]);
+
+    // --- tunnel, mesh, bus
+
+    const auto indexq = [&] (const QPoint &p) {
+        return index(p.x(), p.y());
+    };
+
+    const auto findp = [&] (const QPoint &p) {
+        return find(comps, indexq(p));
+    };  
+
+    const auto type = [&] (int compid) {
+        int x = compid % width;
+        int y = compid / width;
+        return logic[y][x];
+    };
+
+    const auto uniteGroup = [&] (const QVector<int> &group) {
+        for (int k = 1; k < group.size(); ++ k)
+            unite(comps, group[0], group[k]);
+    };
+
+    const auto uniteGroupByType = [&] (const QSet<int> &group) {
+        QMap<Component,QVector<int> > bytype;
+        for (int id : group)
+            bytype[type(id)].append(id);
+        for (const QVector<int> &typegroup : bytype)
+            uniteGroup(typegroup);
+    };
+
+    using CompConns = QMap<int,QSet<int> >; // ID => adjacent IDs
+
+    // tunnels
+    // note: each tunnel will be processed twice, once for each endpoint. while this
+    // is a minor performance hit, allowing it greatly simplifies the code and won't
+    // cause any issues.
+    {
+        for (const Conn &conn : tunnelConns) {
+            QPoint tp = conn.first;
+            QPoint pp = conn.second;
+            Component startp = logic[pp.y()][pp.x()];
+            if (IsMesh(startp)) continue; // meshes don't go through tunnels
+            int dx = tp.x() - pp.x(), dy = tp.y() - pp.y();
+            assert(dx >= -1 && dx <= 1);
+            assert(dy >= -1 && dy <= 1);
+            assert(dx || dy);
+            assert(!(dx && dy));
+            bool matched = false;
+            int x = tp.x(), y = tp.y();
+            while (!matched) {
+                x += dx;
+                y += dy;
+                if (dx && (x <= 0 || x >= width - 1)) break;
+                if (dy && (y <= 0 || y >= height - 1)) break;
+                Component endt = logic[y][x];
+                Component endp = logic[y+dy][x+dx];
+                if (IsTunnel(endt) && endp == startp) {
+                    unite(comps, index(pp.x(), pp.y()), index(x+dx, y+dy));
+                    matched = true;
+                }
+            }
+            if (!matched)
+                qDebug() << "warning: unmatched tunnel" << tp << "->" << pp;
+        }
+    }
+
+    // mesh
+    {
+        QSet<int> mgroup;
+        for (const Conn &conn : meshConns) {
+            int id = findp(conn.first);
+            int cid = indexq(conn.second);
+            // all meshes are connected
+            assert(IsMesh(type(id)));
+            mgroup.insert(cid);
+        }
+        uniteGroupByType(mgroup);
+    }
+
+    // busses (after meshes and tunnels!)
+    {
+        CompConns bconns;
+        for (const Conn &conn : busConns) {
+            int id = findp(conn.first);
+            int cid = indexq(conn.second);
+            assert(IsBus(type(id)));
+            bconns[id].insert(cid); // busses are keyed on bus entity id
+        }
+        for (const QSet<int> &group : bconns.values())
+            uniteGroupByType(group);
+    }
+
+    // flatten everything again to simplify code
+    for (int k = 0; k < comps.size(); ++ k)
+        comps[k] = find(comps, comps[k]);
+
+    // --- build graph from r/w inks
+
+    entities_.clear();
+    connections_.clear();
+
+    // entity list
+    for (int id : comps) {
+        Component t = type(id);
+        if (IsActive(t) || IsTrace(t))
+            entities_[id] = t;
+    }
+
+    // read connections
+    for (const Conn &conn : readConns) {
+        if (IsActive(type(indexq(conn.second)))) {
+            int from = findp(conn.first);
+            int to = findp(conn.second);
+            connections_.insert({from, to});
+        }
+    }
+
+    // write connections
+    for (const Conn &conn : writeConns) {
+        if (IsActive(type(indexq(conn.second)))) {
+            int from = findp(conn.second);
+            int to = findp(conn.first);
+            connections_.insert({from, to});
+        }
+    }
+
+    // --- debugging:
+
+    qint64 nsecs = timer.nsecsElapsed();
+    qDebug() << "compiled in" << nsecs / 1000000 << "ms";
+
+    //for (int k = 0; k < comps.size(); ++ k)  comps[k] = find(comps, comps[k]);
+
+    //QSet<int> names;
+    //for (int name : comps)
+    //    names.insert(name);
+ //   qDebug() << "entities" << entities_;
+ //   qDebug() << "connections" << connections_;
+
+ //   for (int y = 0; y < height; ++ y) {
+ //       QString row;
+ //       for (int x = 0; x < width; ++ x) {
+ //           if (type(index(x,y)) == Empty)
+  //              row += "      ";
+ //           else
+  //              row += QString().asprintf("%5d ", comps[index(x,y)]);
+  //      }
+   //     qDebug().noquote() << row;
+ //   }
+    //qDebug() << busConns;
+    //qDebug() << tunnelConns;
+    //qDebug() << meshConns;
+    //qDebug() << wirelessConns;
+
+}
+
+static bool operator < (const QColor &a, const QColor &b) {
+    if (a.red() != b.red())
+        return a.red() < b.red();
+    else if (a.green() != b.green())
+        return a.green() < b.green();
+    else if (a.blue() != b.blue())
+        return a.blue() < b.blue();
+    else if (a.alpha() != b.alpha())
+        return a.alpha() < b.alpha();
+    else
+        return false;
+}
+
+Compiler::Component Compiler::Comp (Blueprint::Ink ink) {
+
+    static const QMap<Blueprint::Ink,Component> m = {
+        { Blueprint::Cross, Cross },
+        { Blueprint::Tunnel, Tunnel },
+        { Blueprint::Mesh, Mesh },
+        { Blueprint::Bus1, Bus1 },
+        { Blueprint::Bus2, Bus2 },
+        { Blueprint::Bus3, Bus3 },
+        { Blueprint::Bus4, Bus4 },
+        { Blueprint::Bus5, Bus5 },
+        { Blueprint::Bus6, Bus6 },
+        { Blueprint::Write, Write },
+        { Blueprint::Read, Read },
+        { Blueprint::Trace1, Trace1 },
+        { Blueprint::Trace2, Trace2 },
+        { Blueprint::Trace3, Trace3 },
+        { Blueprint::Trace4, Trace4 },
+        { Blueprint::Trace5, Trace5 },
+        { Blueprint::Trace6, Trace6 },
+        { Blueprint::Trace7, Trace7 },
+        { Blueprint::Trace8, Trace8 },
+        { Blueprint::Trace9, Trace9 },
+        { Blueprint::Trace10, Trace10 },
+        { Blueprint::Trace11, Trace11 },
+        { Blueprint::Trace12, Trace12 },
+        { Blueprint::Trace13, Trace13 },
+        { Blueprint::Trace14, Trace14 },
+        { Blueprint::Trace15, Trace15 },
+        { Blueprint::Trace16, Trace16 },
+        { Blueprint::Buffer, Buffer },
+        { Blueprint::And, And },
+        { Blueprint::Or, Or },
+        { Blueprint::Nor, Nor },
+        { Blueprint::Not, Not },
+        { Blueprint::Nand, Nand },
+        { Blueprint::Xor, Xor },
+        { Blueprint::Xnor, Xnor },
+        { Blueprint::LatchOn, LatchOn },
+        { Blueprint::LatchOff, LatchOff },
+        { Blueprint::Clock, Clock },
+        { Blueprint::LED, LED },
+        { Blueprint::Timer, Timer },
+        { Blueprint::Random, Random },
+        { Blueprint::Break, Break },
+        { Blueprint::Wifi0, Wifi0 },
+        { Blueprint::Wifi1, Wifi1 },
+        { Blueprint::Wifi2, Wifi2 },
+        { Blueprint::Wifi3, Wifi3 },
+        { Blueprint::Annotation, Empty },
+        { Blueprint::Filler, Empty },
+        { Blueprint::Empty, Empty }
+    };
+
+    return m[ink];
+
+}
+
+
+QString Compiler::Desc (Component comp) {
+
+    static const QMap<Component,QString> s = {
+        { Empty, "Empty" },
+        { Cross, "Cross" },
+        { Tunnel, "Tunnel" },
+        { Mesh, "Mesh" },
+        { Bus1, "Bus1" },
+        { Bus2, "Bus2" },
+        { Bus3, "Bus3" },
+        { Bus4, "Bus4" },
+        { Bus5, "Bus5" },
+        { Bus6, "Bus6" },
+        { Write, "Trace" },
+        { Read, "Trace" },
+        { Trace1, "Trace" },
+        { Trace2, "Trace" },
+        { Trace3, "Trace" },
+        { Trace4, "Trace" },
+        { Trace5, "Trace" },
+        { Trace6, "Trace" },
+        { Trace7, "Trace" },
+        { Trace8, "Trace" },
+        { Trace9, "Trace" },
+        { Trace10, "Trace" },
+        { Trace11, "Trace" },
+        { Trace12, "Trace" },
+        { Trace13, "Trace" },
+        { Trace14, "Trace" },
+        { Trace15, "Trace" },
+        { Trace16, "Trace" },
+        { Buffer, "Buffer" },
+        { And, "And" },
+        { Or, "Or" },
+        { Nor, "Nor" },
+        { Not, "Not" },
+        { Nand, "Nand" },
+        { Xor, "Xor" },
+        { Xnor, "Xnor" },
+        { LatchOn, "LatchOn" },
+        { LatchOff, "LatchOff" },
+        { Clock, "Clock" },
+        { LED, "LED" },
+        { Timer, "Timer" },
+        { Random, "Random" },
+        { Break, "Break" },
+        { Wifi0, "Wifi0" },
+        { Wifi1, "Wifi1" },
+        { Wifi2, "Wifi2" },
+        { Wifi3, "Wifi3" }
+    };
+
+    return s[comp];
+
+}
+
+
+QStringList Compiler::buildDot () const {
+
+    QStringList dot;
+    dot.append("digraph {");
+
+    for (int id : entities_.keys()) {
+        QString label = Desc(entities_[id]);
+        dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+    }
+
+    for (QPair conn : connections_) {
+        dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
+    }
+
+    dot.append("}");
+    return dot;
+
+}

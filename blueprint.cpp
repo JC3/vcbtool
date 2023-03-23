@@ -125,6 +125,9 @@ Blueprint::Blueprint (QString bpString, QObject *parent) :
         pos += blockSize;
     }
 
+    if (layers_.empty())
+        throw runtime_error("Invalid blueprint string -- no layers found.");
+
 }
 
 void Blueprint::setPixel (Layer which, int x, int y, Ink ink) {
@@ -136,6 +139,16 @@ void Blueprint::setPixel (Layer which, int x, int y, Ink ink) {
         throw runtime_error("Coordinates out of range for layer.");
 
     image.setPixelColor(x, y, ink);
+
+}
+
+Blueprint::Ink Blueprint::getPixel (Layer which, int x, int y) const {
+
+    const QImage &image = layers_[which];
+    if (x < 0 || y < 0 || x >= image.width() || y >= image.height())
+        throw runtime_error("Coordinates out of range for layer.");
+
+    return image.pixelColor(x, y);
 
 }
 
