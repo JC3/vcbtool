@@ -101,11 +101,14 @@ public:
 
     QStringList buildDot (bool compressed = false) const;
     QSet<QPair<int,int> > compressedConnections () const;
+    void analyzeCircuit () const;
 
 private:
     void compileBlueprint (const Blueprint *bp);
     QMap<int,Component> entities_;
     QSet<QPair<int,int> > connections_; // pair(from,to)
+    int bpwidth_;
+    int bpheight_;
 };
 
 #endif // COMPILER_H

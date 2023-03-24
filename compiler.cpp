@@ -229,6 +229,8 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
 
     entities_.clear();
     connections_.clear();
+    bpwidth_ = width;
+    bpheight_ = height;
 
     // entity list
     for (int id : comps) {
@@ -492,5 +494,92 @@ QSet<QPair<int,int> > Compiler::compressedConnections () const {
 
     qDeleteAll(nodes.values());
     return conns;
+
+}
+
+
+void Compiler::analyzeCircuit () const {
+
+    struct Node {
+        QVector<Node*> from;
+        QVector<Node*> to;
+        int id;
+        Component type;
+        Node (int id, Component type) : id(id), type(type) { }
+        ~Node () {
+            for (Node *in : from) in->to.removeOne(this);
+            for (Node *out : to) out->from.removeOne(this);
+        }
+    };
+
+    const auto connectNode = [] (Node *from, Node *to) {
+        from->to.append(to);
+        to->from.append(from);
+    };
+
+    QMap<int,Node *> nodes;
+
+    // create nodes
+    for (int id : entities_.keys())
+        nodes[id] = new Node(id, entities_[id]);
+
+    // connect nodes
+    for (QPair<int,int> conn : connections_) {
+        Node *from = nodes[conn.first];
+        Node *to = nodes[conn.second];
+        assert(from);
+        assert(to);
+        connectNode(from, to);
+    }
+
+    //----
+
+    static const auto print = [&] (const Node *node, QString message) {
+        int x = node->id % bpwidth_;
+        int y = node->id / bpwidth_;
+        qDebug() << "analysis:" << x << y << message;
+    };
+
+    static const auto inputcheck = [&] (const Node *node, Component type, int minInput, int minOutput) {
+        if (node->type == type) {
+            if (node->from.size() < minInput) print(node, QString("%1 has less than %2 inputs").arg(Desc(node->type)).arg(minInput));
+            if (node->to.size() < minOutput) print(node, QString("%1 has less than %2 outputs").arg(Desc(node->type)).arg(minOutput));
+        }
+    };
+
+    constexpr int GateMinIn = 1;
+    constexpr bool CheckTraces = false;
+
+    for (Node *node : nodes.values()) {
+        if (CheckTraces) {
+            if (IsTrace(node->type) && node->to.empty())
+                print(node, "nothing reads from this trace");
+            if (IsTrace(node->type) && node->from.empty())
+                print(node, "nothing writes to this trace");
+        }
+        inputcheck(node, Buffer, 1, 1);
+        inputcheck(node, And, GateMinIn, 1);
+        inputcheck(node, Or, GateMinIn, 1);
+        inputcheck(node, Nor, GateMinIn, 1);
+        inputcheck(node, Not, 1, 1);
+        inputcheck(node, Nand, GateMinIn, 1);
+        inputcheck(node, Xor, GateMinIn, 1);
+        inputcheck(node, Xnor, GateMinIn, 1);
+        inputcheck(node, LatchOn, 0, 1);
+        inputcheck(node, LatchOff, 0, 1);
+        inputcheck(node, Clock, 0, 1);
+        inputcheck(node, LED, 1, 0);
+        inputcheck(node, Timer, 0, 1);
+        inputcheck(node, Random, 0, 1);
+        inputcheck(node, Break, 1, 0);
+        inputcheck(node, Wifi0, 1, 1);
+        inputcheck(node, Wifi1, 1, 1);
+        inputcheck(node, Wifi2, 1, 1);
+        inputcheck(node, Wifi3, 1, 1);
+    }
+
+    //----
+
+    qDeleteAll(nodes.values());
 
 }
