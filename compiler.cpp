@@ -227,8 +227,7 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
 
     // --- build graph from r/w inks
 
-    entities_.clear();
-    connections_.clear();
+    sgraph_ = SimpleGraph();
     bpwidth_ = width;
     bpheight_ = height;
 
@@ -236,7 +235,7 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
     for (int id : comps) {
         Component t = type(id);
         if (IsActive(t) || IsTrace(t))
-            entities_[id] = t;
+            sgraph_.entities[id] = t;
     }
 
     // read connections
@@ -244,7 +243,7 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
         if (IsActive(type(indexq(conn.second)))) {
             int from = findp(conn.first);
             int to = findp(conn.second);
-            connections_.insert({from, to});
+            sgraph_.connections.insert({from, to});
         }
     }
 
@@ -253,7 +252,7 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
         if (IsActive(type(indexq(conn.second)))) {
             int from = findp(conn.second);
             int to = findp(conn.first);
-            connections_.insert({from, to});
+            sgraph_.connections.insert({from, to});
         }
     }
 
@@ -418,17 +417,17 @@ QString Compiler::Desc (Component comp) {
 
 QStringList Compiler::buildDot (bool compressed) const {
 
+    SimpleGraph graph = compressed ? compressedConnections() : sgraph_;
+
     QStringList dot;
     dot.append("digraph {");
 
-    for (int id : entities_.keys()) {
-        if (!compressed || !IsTrace(entities_[id])) {
-            QString label = Desc(entities_[id]);
-            dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
-        }
+    for (int id : graph.entities.keys()) {
+        QString label = Desc(graph.entities[id]);
+        dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
     }
 
-    for (QPair conn : (compressed ? compressedConnections() : connections_)) {
+    for (QPair conn : graph.connections) {
         dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
     }
 
@@ -438,7 +437,7 @@ QStringList Compiler::buildDot (bool compressed) const {
 }
 
 
-QSet<QPair<int,int> > Compiler::compressedConnections () const {
+Compiler::SimpleGraph Compiler::compressedConnections () const {
 
     struct Node {
         QVector<Node*> from;
@@ -460,11 +459,11 @@ QSet<QPair<int,int> > Compiler::compressedConnections () const {
     QMap<int,Node *> nodes;
 
     // create nodes
-    for (int id : entities_.keys())
-        nodes[id] = new Node(id, entities_[id]);
+    for (int id : sgraph_.entities.keys())
+        nodes[id] = new Node(id, sgraph_.entities[id]);
 
     // connect nodes
-    for (QPair<int,int> conn : connections_) {
+    for (QPair<int,int> conn : sgraph_.connections) {
         Node *from = nodes[conn.first];
         Node *to = nodes[conn.second];
         assert(from);
@@ -476,7 +475,7 @@ QSet<QPair<int,int> > Compiler::compressedConnections () const {
     {
         QVector<Node *> nodework(nodes.values().toVector());
         for (Node *node : nodework) {
-            if (IsTrace(node->type)) {
+            if (IsTrace(node->type) && node->from.size() == 1 && node->to.size() != 0) {
                 for (Node *from : node->from)
                     for (Node *to : node->to)
                         connectNode(from, to);
@@ -486,14 +485,19 @@ QSet<QPair<int,int> > Compiler::compressedConnections () const {
         }
     }
 
+    SimpleGraph cgraph;
+
+    // build new entity list
+    for (Node *node : nodes.values())
+        cgraph.entities[node->id] = node->type;
+
     // build new connection list
-    QSet<QPair<int,int> > conns;
     for (Node *node : nodes.values())
         for (Node *to : node->to)
-            conns.insert({node->id, to->id});
+            cgraph.connections.insert({node->id, to->id});
 
     qDeleteAll(nodes.values());
-    return conns;
+    return cgraph;
 
 }
 
@@ -520,11 +524,11 @@ void Compiler::analyzeCircuit () const {
     QMap<int,Node *> nodes;
 
     // create nodes
-    for (int id : entities_.keys())
-        nodes[id] = new Node(id, entities_[id]);
+    for (int id : sgraph_.entities.keys())
+        nodes[id] = new Node(id, sgraph_.entities[id]);
 
     // connect nodes
-    for (QPair<int,int> conn : connections_) {
+    for (QPair<int,int> conn : sgraph_.connections) {
         Node *from = nodes[conn.first];
         Node *to = nodes[conn.second];
         assert(from);

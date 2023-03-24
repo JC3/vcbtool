@@ -147,7 +147,7 @@ void MainWindow::on_btnNetlistGenerate_clicked()
         //qDebug().noquote() << c.buildDot().join("\n");
         QFile f("dotgraph.txt");
         f.open(QFile::WriteOnly  |QFile::Text);
-        f.write(c.buildDot(false).join("\n").toLatin1());
+        f.write(c.buildDot(true).join("\n").toLatin1());
         f.close();
         c.analyzeCircuit();
     } catch (const std::exception &x) {
