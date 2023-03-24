@@ -1,4 +1,4 @@
-#ifndef COMPILER_H
+﻿#ifndef COMPILER_H
 #define COMPILER_H
 
 #include "blueprint.h"
@@ -99,7 +99,8 @@ public:
 
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
-    QStringList buildDot () const;
+    QStringList buildDot (bool compressed = false) const;
+    QSet<QPair<int,int> > compressedConnections () const;
 
 private:
     void compileBlueprint (const Blueprint *bp);

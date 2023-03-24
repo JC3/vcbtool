@@ -414,21 +414,83 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildDot () const {
+QStringList Compiler::buildDot (bool compressed) const {
 
     QStringList dot;
     dot.append("digraph {");
 
     for (int id : entities_.keys()) {
-        QString label = Desc(entities_[id]);
-        dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+        if (!compressed || !IsTrace(entities_[id])) {
+            QString label = Desc(entities_[id]);
+            dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+        }
     }
 
-    for (QPair conn : connections_) {
+    for (QPair conn : (compressed ? compressedConnections() : connections_)) {
         dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
     }
 
     dot.append("}");
     return dot;
+
+}
+
+
+QSet<QPair<int,int> > Compiler::compressedConnections () const {
+
+    struct Node {
+        QVector<Node*> from;
+        QVector<Node*> to;
+        int id;
+        Component type;
+        Node (int id, Component type) : id(id), type(type) { }
+        ~Node () {
+            for (Node *in : from) in->to.removeOne(this);
+            for (Node *out : to) out->from.removeOne(this);
+        }
+    };
+
+    const auto connectNode = [] (Node *from, Node *to) {
+        from->to.append(to);
+        to->from.append(from);
+    };
+
+    QMap<int,Node *> nodes;
+
+    // create nodes
+    for (int id : entities_.keys())
+        nodes[id] = new Node(id, entities_[id]);
+
+    // connect nodes
+    for (QPair<int,int> conn : connections_) {
+        Node *from = nodes[conn.first];
+        Node *to = nodes[conn.second];
+        assert(from);
+        assert(to);
+        connectNode(from, to);
+    }
+
+    // remove traces
+    {
+        QVector<Node *> nodework(nodes.values().toVector());
+        for (Node *node : nodework) {
+            if (IsTrace(node->type)) {
+                for (Node *from : node->from)
+                    for (Node *to : node->to)
+                        connectNode(from, to);
+                nodes.remove(node->id);
+                delete node;
+            }
+        }
+    }
+
+    // build new connection list
+    QSet<QPair<int,int> > conns;
+    for (Node *node : nodes.values())
+        for (Node *to : node->to)
+            conns.insert({node->id, to->id});
+
+    qDeleteAll(nodes.values());
+    return conns;
 
 }
