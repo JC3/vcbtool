@@ -439,37 +439,7 @@ QStringList Compiler::buildDot (bool compressed) const {
 
 Compiler::SimpleGraph Compiler::compressedConnections () const {
 
-    struct Node {
-        QVector<Node*> from;
-        QVector<Node*> to;
-        int id;
-        Component type;
-        Node (int id, Component type) : id(id), type(type) { }
-        ~Node () {
-            for (Node *in : from) in->to.removeOne(this);
-            for (Node *out : to) out->from.removeOne(this);
-        }
-    };
-
-    const auto connectNode = [] (Node *from, Node *to) {
-        from->to.append(to);
-        to->from.append(from);
-    };
-
-    QMap<int,Node *> nodes;
-
-    // create nodes
-    for (int id : sgraph_.entities.keys())
-        nodes[id] = new Node(id, sgraph_.entities[id]);
-
-    // connect nodes
-    for (QPair<int,int> conn : sgraph_.connections) {
-        Node *from = nodes[conn.first];
-        Node *to = nodes[conn.second];
-        assert(from);
-        assert(to);
-        connectNode(from, to);
-    }
+    ComplexGraph nodes = buildComplexGraph();
 
     // remove traces
     {
@@ -478,7 +448,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
             if (IsTrace(node->type) && node->from.size() == 1 && node->to.size() != 0) {
                 for (Node *from : node->from)
                     for (Node *to : node->to)
-                        connectNode(from, to);
+                        Node::connect(from, to);
                 nodes.remove(node->id);
                 delete node;
             }
@@ -496,7 +466,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
         for (Node *to : node->to)
             cgraph.connections.insert({node->id, to->id});
 
-    qDeleteAll(nodes.values());
+    deleteComplexGraph(nodes);
     return cgraph;
 
 }
@@ -504,39 +474,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
 
 QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 
-    struct Node {
-        QVector<Node*> from;
-        QVector<Node*> to;
-        int id;
-        Component type;
-        Node (int id, Component type) : id(id), type(type) { }
-        ~Node () {
-            for (Node *in : from) in->to.removeOne(this);
-            for (Node *out : to) out->from.removeOne(this);
-        }
-    };
-
-    const auto connectNode = [] (Node *from, Node *to) {
-        from->to.append(to);
-        to->from.append(from);
-    };
-
-    QMap<int,Node *> nodes;
-
-    // create nodes
-    for (int id : sgraph_.entities.keys())
-        nodes[id] = new Node(id, sgraph_.entities[id]);
-
-    // connect nodes
-    for (QPair<int,int> conn : sgraph_.connections) {
-        Node *from = nodes[conn.first];
-        Node *to = nodes[conn.second];
-        assert(from);
-        assert(to);
-        connectNode(from, to);
-    }
-
-    //----
+    ComplexGraph nodes = buildComplexGraph();
 
     QStringList results;
 
@@ -587,10 +525,30 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
         inputcheck(node, Wifi3, 1, 1);
     }
 
-    //----
-
-    qDeleteAll(nodes.values());
+    deleteComplexGraph(nodes);
 
     return results;
+
+}
+
+
+Compiler::ComplexGraph Compiler::buildComplexGraph () const {
+
+    ComplexGraph nodes;
+
+    // create nodes
+    for (int id : sgraph_.entities.keys())
+        nodes[id] = new Node(id, sgraph_.entities[id]);
+
+    // connect nodes
+    for (QPair<int,int> conn : sgraph_.connections) {
+        Node *from = nodes[conn.first];
+        Node *to = nodes[conn.second];
+        assert(from);
+        assert(to);
+        Node::connect(from, to);
+    }
+
+    return nodes;
 
 }

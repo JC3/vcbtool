@@ -110,15 +110,45 @@ public:
     QStringList analyzeCircuit (const AnalysisSettings &settings) const;
 
 private:
+
     struct SimpleGraph {
         QMap<int,Component> entities;
         QSet<QPair<int,int> > connections;
     };
+
     void compileBlueprint (const Blueprint *bp);
     SimpleGraph compressedConnections () const;
+
     SimpleGraph sgraph_;
     int bpwidth_;
     int bpheight_;
+
+
+    struct Node {
+        QVector<Node*> from;
+        QVector<Node*> to;
+        int id;
+        Component type;
+        Node (int id, Component type) : id(id), type(type) { }
+        ~Node () {
+            for (Node *in : from) in->to.removeOne(this);
+            for (Node *out : to) out->from.removeOne(this);
+        }
+        static void connect (Node *from, Node *to) {
+            from->to.append(to);
+            to->from.append(from);
+        }
+    };
+
+    using ComplexGraph = QMap<int,Node*>;
+
+    ComplexGraph buildComplexGraph () const;
+
+    static void deleteComplexGraph (ComplexGraph &graph) {
+        qDeleteAll(graph.values());
+        graph.clear();
+    }
+
 };
 
 #endif // COMPILER_H
