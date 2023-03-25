@@ -322,12 +322,15 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tabNetlist">
+      <widget class="QWidget" name="tabAnalysis">
        <attribute name="title">
-        <string>Generate Netlist</string>
+        <string>Analysis Tools</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="0" colspan="4">
+        <item row="0" column="3">
+         <widget class="QPlainTextEdit" name="txtNetlistOut"/>
+        </item>
+        <item row="0" column="0">
          <widget class="QPlainTextEdit" name="txtNetlistBP">
           <property name="plainText">
            <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
@@ -337,41 +340,83 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Format:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QComboBox" name="cbNetlistFormat">
+        <item row="0" column="1">
+         <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <property name="text">
-            <string>EDIF</string>
-           </property>
+           <spacer name="verticalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
-         </widget>
-        </item>
-        <item row="1" column="2">
-         <widget class="QPushButton" name="btnNetlistGenerate">
-          <property name="text">
-           <string>Generate</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>397</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
+          <item>
+           <widget class="QPushButton" name="btnNetlistCheck">
+            <property name="text">
+             <string>Check Problems</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkUnconnectedTraces">
+            <property name="text">
+             <string>Unconnected Traces</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chk2InputGates">
+            <property name="text">
+             <string>&lt;2-Input Gates</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnNetlistGraph">
+            <property name="text">
+             <string>Generate Graph</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkCleanGraph">
+            <property name="text">
+             <string>Clean Graph</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

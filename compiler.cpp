@@ -502,7 +502,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
 }
 
 
-void Compiler::analyzeCircuit () const {
+QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 
     struct Node {
         QVector<Node*> from;
@@ -538,21 +538,26 @@ void Compiler::analyzeCircuit () const {
 
     //----
 
-    static const auto print = [&] (const Node *node, QString message) {
+    QStringList results;
+
+    const auto print = [&] (const Node *node, QString message) {
         int x = node->id % bpwidth_;
         int y = node->id / bpwidth_;
         qDebug() << "analysis:" << x << y << message;
+        results.append(QString("%1, %2: %3").arg(x).arg(y).arg(message));
     };
 
-    static const auto inputcheck = [&] (const Node *node, Component type, int minInput, int minOutput) {
+    const auto inputcheck = [&] (const Node *node, Component type, int minInput, int minOutput) {
         if (node->type == type) {
             if (node->from.size() < minInput) print(node, QString("%1 has less than %2 inputs").arg(Desc(node->type)).arg(minInput));
             if (node->to.size() < minOutput) print(node, QString("%1 has less than %2 outputs").arg(Desc(node->type)).arg(minOutput));
         }
     };
 
-    constexpr int GateMinIn = 1;
-    constexpr bool CheckTraces = false;
+    //constexpr int GateMinIn = 1;
+    //constexpr bool CheckTraces = false;
+    const int GateMinIn = settings.checkGates ? 2 : 1;
+    const bool CheckTraces = settings.checkTraces;
 
     for (Node *node : nodes.values()) {
         if (CheckTraces) {
@@ -585,5 +590,7 @@ void Compiler::analyzeCircuit () const {
     //----
 
     qDeleteAll(nodes.values());
+
+    return results;
 
 }

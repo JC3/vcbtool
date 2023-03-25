@@ -100,7 +100,14 @@ public:
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
     QStringList buildDot (bool compressed = false) const;
-    void analyzeCircuit () const;
+
+    struct AnalysisSettings {
+        bool checkTraces;
+        bool checkGates;
+        AnalysisSettings () : checkTraces(true), checkGates(true) { }
+    };
+
+    QStringList analyzeCircuit (const AnalysisSettings &settings) const;
 
 private:
     struct SimpleGraph {
