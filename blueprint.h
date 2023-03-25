@@ -71,6 +71,10 @@ public:
     void setPixel (Layer which, int x, int y, Ink ink);
     void set (int x, int y, Ink ink) { setPixel(Logic, x, y, ink); }
     QString bpString () const;
+    int width () const { return layers_.first().width(); }
+    int height () const { return layers_.first().height(); }
+    Ink getPixel (Layer which, int x, int y) const;
+    Ink get (int x, int y) const { return getPixel(Logic, x, y); }
 private:
     mutable QString bpString_;
     QMap<Layer,QImage> layers_;

@@ -2,8 +2,10 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDebug>
 #include <stdexcept>
 #include "circuits.h"
+#include "compiler.h"
 
 using std::runtime_error;
 
@@ -133,6 +135,35 @@ void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 
 void MainWindow::on_spnROMDataBits_valueChanged(int arg1)
 {
+    Q_UNUSED(arg1);
     //ui_->cbROMBitOrder->setEnabled(arg1 > 1);
+}
+
+
+void MainWindow::on_btnNetlistCheck_clicked()
+{
+    try {
+        Blueprint bp(ui_->txtNetlistBP->toPlainText());
+        Compiler c(&bp);
+        Compiler::AnalysisSettings s;
+        s.checkTraces = ui_->chkUnconnectedTraces->isChecked();
+        s.checkGates = ui_->chk2InputGates->isChecked();
+        ui_->txtNetlistOut->setPlainText(c.analyzeCircuit(s).join("\n"));
+    } catch (const std::exception &x) {
+        QMessageBox::critical(this, "Error", x.what());
+    }
+}
+
+
+void MainWindow::on_btnNetlistGraph_clicked()
+{
+    try {
+        Blueprint bp(ui_->txtNetlistBP->toPlainText());
+        Compiler c(&bp);
+        bool clean = ui_->chkCleanGraph->isChecked();
+        ui_->txtNetlistOut->setPlainText(c.buildDot(clean).join("\n"));
+    } catch (const std::exception &x) {
+        QMessageBox::critical(this, "Error", x.what());
+    }
 }
 

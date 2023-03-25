@@ -11,12 +11,14 @@ CONFIG += c++17
 SOURCES += \
     blueprint.cpp \
     circuits.cpp \
+    compiler.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     blueprint.h \
     circuits.h \
+    compiler.h \
     mainwindow.h
 
 FORMS += \
