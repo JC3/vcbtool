@@ -160,8 +160,10 @@ void MainWindow::on_btnNetlistGraph_clicked()
     try {
         Blueprint bp(ui_->txtNetlistBP->toPlainText());
         Compiler c(&bp);
-        bool clean = ui_->chkCleanGraph->isChecked();
-        ui_->txtNetlistOut->setPlainText(c.buildDot(clean).join("\n"));
+        Compiler::GraphSettings s;
+        s.compressed = ui_->chkCleanGraph->isChecked();
+        s.ioclusters = ui_->chkClusterIO->isChecked();
+        ui_->txtNetlistOut->setPlainText(c.buildGraphViz(s).join("\n"));
     } catch (const std::exception &x) {
         QMessageBox::critical(this, "Error", x.what());
     }

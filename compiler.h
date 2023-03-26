@@ -17,6 +17,7 @@ public:
     static constexpr Component BusBit    = 0x00010000;
     static constexpr Component TraceBit  = 0x00020000;
     static constexpr Component WifiBit   = 0x00001000; // not a category!
+    static constexpr Component LatchBit  = 0x00002000; // not a category!
     static constexpr Component Empty = 0;
     static constexpr Component Cross = 1;
     static constexpr Component Tunnel = 2;
@@ -53,8 +54,8 @@ public:
     static constexpr Component Nand = ActiveBit | 33;
     static constexpr Component Xor = ActiveBit | 34;
     static constexpr Component Xnor = ActiveBit | 35;
-    static constexpr Component LatchOn = ActiveBit | 36;
-    static constexpr Component LatchOff = ActiveBit | 37;
+    static constexpr Component LatchOn = ActiveBit | LatchBit | 36;
+    static constexpr Component LatchOff = ActiveBit | LatchBit | 37;
     static constexpr Component Clock = ActiveBit | 38;
     static constexpr Component LED = ActiveBit | 39;
     static constexpr Component Timer = ActiveBit | 40;
@@ -69,11 +70,13 @@ public:
     static inline bool IsBus (Component id) { return (id & BusBit); }
     static inline bool IsTrace (Component id) { return (id & TraceBit); }
     static inline bool IsWifi (Component id) { return (id & WifiBit); }
+    static inline bool IsLatch (Component id) { return (id & LatchBit); }
     static inline bool IsTunnel (Component id) { return id == Tunnel; }
     static inline bool IsMesh (Component id) { return id == Mesh; }
     static inline bool IsCross (Component id) { return id == Cross; }
     static inline bool IsRead (Component id) { return id == Read; }
     static inline bool IsWrite (Component id) { return id == Write; }
+    static inline bool IsLED (Component id) { return id == LED; }
     static inline bool IsActive (Component id) { return (id & ActiveBit); }
     static inline Component Category (Component id) { return (id & CatMask); }
 
@@ -99,7 +102,13 @@ public:
 
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
-    QStringList buildDot (bool compressed = false) const;
+    struct GraphSettings {
+        bool compressed;
+        bool ioclusters;
+        GraphSettings () : compressed(false), ioclusters(false) { }
+    };
+
+    QStringList buildGraphViz (const GraphSettings &settings) const;
 
     struct AnalysisSettings {
         bool checkTraces;
@@ -142,7 +151,7 @@ private:
 
     using ComplexGraph = QMap<int,Node*>;
 
-    ComplexGraph buildComplexGraph () const;
+    static ComplexGraph buildComplexGraph (const SimpleGraph &sgraph);
 
     static void deleteComplexGraph (ComplexGraph &graph) {
         qDeleteAll(graph.values());

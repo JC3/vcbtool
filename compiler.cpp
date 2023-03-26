@@ -415,21 +415,48 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildDot (bool compressed) const {
+QStringList Compiler::buildGraphViz (const GraphSettings &settings) const {
 
-    SimpleGraph graph = compressed ? compressedConnections() : sgraph_;
+    SimpleGraph graph = settings.compressed ? compressedConnections() : sgraph_;
 
     QStringList dot;
     dot.append("digraph {");
 
-    for (int id : graph.entities.keys()) {
+    /*for (int id : graph.entities.keys()) {
         QString label = Desc(graph.entities[id]);
         dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+    }*/
+
+    ComplexGraph cgraph = buildComplexGraph(graph);
+    enum NodeType { Input, Output, Generic };
+
+    for (int id : graph.entities.keys()) {
+        QString label = Desc(graph.entities[id]);
+        // hack
+        NodeType ntype = Generic;
+        if (settings.ioclusters) {
+            const Node *node = cgraph[id];
+            assert(node);
+            if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
+                if (node->from.empty() && !node->to.empty())
+                    ntype = Input;
+                else if (node->to.empty() && !node->from.empty())
+                    ntype = Output;
+            }
+        }
+        // ----
+        switch (ntype) {
+        case Input: dot.append(QString("  subgraph cluster_input { %1[label=\"%2\"] };").arg(id).arg(label)); break;
+        case Output: dot.append(QString("  subgraph cluster_output { %1[label=\"%2\"] };").arg(id).arg(label)); break;
+        default: dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label)); break;
+        }
     }
 
     for (QPair conn : graph.connections) {
         dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
     }
+
+    deleteComplexGraph(cgraph);
 
     dot.append("}");
     return dot;
@@ -439,7 +466,7 @@ QStringList Compiler::buildDot (bool compressed) const {
 
 Compiler::SimpleGraph Compiler::compressedConnections () const {
 
-    ComplexGraph nodes = buildComplexGraph();
+    ComplexGraph nodes = buildComplexGraph(sgraph_);
 
     // remove traces
     {
@@ -474,7 +501,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
 
 QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 
-    ComplexGraph nodes = buildComplexGraph();
+    ComplexGraph nodes = buildComplexGraph(sgraph_);
 
     QStringList results;
 
@@ -532,16 +559,16 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 }
 
 
-Compiler::ComplexGraph Compiler::buildComplexGraph () const {
+Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
 
     ComplexGraph nodes;
 
     // create nodes
-    for (int id : sgraph_.entities.keys())
-        nodes[id] = new Node(id, sgraph_.entities[id]);
+    for (int id : sgraph.entities.keys())
+        nodes[id] = new Node(id, sgraph.entities[id]);
 
     // connect nodes
-    for (QPair<int,int> conn : sgraph_.connections) {
+    for (QPair<int,int> conn : sgraph.connections) {
         Node *from = nodes[conn.first];
         Node *to = nodes[conn.second];
         assert(from);
