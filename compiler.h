@@ -107,9 +107,10 @@ public:
         bool compressed;
         bool ioclusters;
         bool timings;
+        bool timinglabels;
         PosMode positions;
         float scale;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false), positions(None), scale(1.0f) { }
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f) { }
     };
 
     QStringList buildGraphViz (GraphSettings settings) const;

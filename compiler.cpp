@@ -447,7 +447,7 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
         }
     }
 
-    if (settings.timings)
+    if (settings.timings || settings.timinglabels)
         computeTimings(cgraph);
 
     for (int id : graph.entities.keys()) {
@@ -455,7 +455,10 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
         QMap<QString,QString> attrs;
         QString cluster;
 
-        attrs["label"] = Desc(graph.entities[id]);
+        QString label = Desc(graph.entities[id]);
+        if (settings.timinglabels)
+            label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
+        attrs["label"] = label;
 
         if (settings.ioclusters) {
             switch (cgraph[id]->purpose) {
