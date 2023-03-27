@@ -163,6 +163,7 @@ void MainWindow::on_btnNetlistGraph_clicked()
         Compiler::GraphSettings s;
         s.compressed = ui_->chkCleanGraph->isChecked();
         s.ioclusters = ui_->chkClusterIO->isChecked();
+        s.timings = ui_->chkClusterTiming->isChecked();
         ui_->txtNetlistOut->setPlainText(c.buildGraphViz(s).join("\n"));
     } catch (const std::exception &x) {
         QMessageBox::critical(this, "Error", x.what());

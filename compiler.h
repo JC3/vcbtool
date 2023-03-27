@@ -105,10 +105,11 @@ public:
     struct GraphSettings {
         bool compressed;
         bool ioclusters;
-        GraphSettings () : compressed(false), ioclusters(false) { }
+        bool timings;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false) { }
     };
 
-    QStringList buildGraphViz (const GraphSettings &settings) const;
+    QStringList buildGraphViz (GraphSettings settings) const;
 
     struct AnalysisSettings {
         bool checkTraces;
@@ -132,13 +133,15 @@ private:
     int bpwidth_;
     int bpheight_;
 
-
     struct Node {
+        enum Purpose { Other, Input, Output };
         QVector<Node*> from;
         QVector<Node*> to;
         int id;
         Component type;
-        Node (int id, Component type) : id(id), type(type) { }
+        Purpose purpose;
+        int mintiming, maxtiming;
+        Node (int id, Component type) : id(id), type(type), purpose(Other), mintiming(-1), maxtiming(-1) { }
         ~Node () {
             for (Node *in : from) in->to.removeOne(this);
             for (Node *out : to) out->from.removeOne(this);
@@ -157,6 +160,8 @@ private:
         qDeleteAll(graph.values());
         graph.clear();
     }
+
+    static void computeTimings (ComplexGraph &graph);
 
 };
 

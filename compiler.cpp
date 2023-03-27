@@ -358,6 +358,11 @@ Compiler::Component Compiler::Comp (Blueprint::Ink ink) {
 }
 
 
+//#############################################################################
+// technically all the compiler code was above. everything below is analysis.
+//#############################################################################
+
+
 QString Compiler::Desc (Component comp) {
 
     static const QMap<Component,QString> s = {
@@ -415,7 +420,10 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildGraphViz (const GraphSettings &settings) const {
+QStringList Compiler::buildGraphViz (GraphSettings settings) const {
+
+    if (settings.timings)
+        settings.ioclusters = false;
 
     SimpleGraph graph = settings.compressed ? compressedConnections() : sgraph_;
 
@@ -428,28 +436,37 @@ QStringList Compiler::buildGraphViz (const GraphSettings &settings) const {
     }*/
 
     ComplexGraph cgraph = buildComplexGraph(graph);
-    enum NodeType { Input, Output, Generic };
+
+    for (Node *node : cgraph.values()) {
+        node->purpose = Node::Other;
+        if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
+            if (node->from.empty() && !node->to.empty())
+                node->purpose = Node::Input;
+            else if (node->to.empty() && !node->from.empty())
+                node->purpose = Node::Output;
+        }
+    }
+
+    if (settings.timings)
+        computeTimings(cgraph);
 
     for (int id : graph.entities.keys()) {
         QString label = Desc(graph.entities[id]);
-        // hack
-        NodeType ntype = Generic;
+        QString cluster;
         if (settings.ioclusters) {
-            const Node *node = cgraph[id];
-            assert(node);
-            if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
-                if (node->from.empty() && !node->to.empty())
-                    ntype = Input;
-                else if (node->to.empty() && !node->from.empty())
-                    ntype = Output;
+            switch (cgraph[id]->purpose) {
+            case Node::Input: cluster = "input"; break;
+            case Node::Output: cluster = "output"; break;
+            default: break;
             }
+        } else if (settings.timings) {
+            int ticks = cgraph[id]->maxtiming;
+            if (ticks >= 0) cluster = QString("%1").arg(ticks);
         }
-        // ----
-        switch (ntype) {
-        case Input: dot.append(QString("  subgraph cluster_input { %1[label=\"%2\"] };").arg(id).arg(label)); break;
-        case Output: dot.append(QString("  subgraph cluster_output { %1[label=\"%2\"] };").arg(id).arg(label)); break;
-        default: dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label)); break;
-        }
+        if (cluster != "")
+            dot.append(QString("  subgraph cluster_%3 { %1[label=\"%2\"] };").arg(id).arg(label).arg(cluster));
+        else
+            dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
     }
 
     for (QPair conn : graph.connections) {
@@ -577,5 +594,37 @@ Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
     }
 
     return nodes;
+
+}
+
+
+void Compiler::computeTimings (ComplexGraph &graph) {
+
+    // naive implementation, will freeze on loops!
+    const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
+        node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
+        node->maxtiming = std::max(node->maxtiming, tickmax);
+        int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
+        int nexttickmax = IsTrace(node->type) ? node->maxtiming : (node->maxtiming + 1);
+        for (Node *to : node->to)
+            compute(to, nexttickmin, nexttickmax);
+    };
+
+    for (Node *node : graph.values())
+        node->mintiming = node->maxtiming = -1;
+
+    for (Node *node : graph.values())
+        if (node->purpose == Node::Input)
+            compute(node, 0, 0);
+
+    int maxmintime = -1, maxmaxtime = -1, minmaxtime = -1;
+    for (Node *node : graph.values()) {
+        if (node->purpose == Node::Output) {
+            maxmintime = std::max(maxmintime, node->mintiming);
+            minmaxtime = (minmaxtime == -1 ? node->maxtiming : std::min(minmaxtime, node->maxtiming));
+            maxmaxtime = std::max(maxmaxtime, node->maxtiming);
+        }
+    }
+    qDebug() << "maxmintime" << maxmintime << "minmaxtime" << minmaxtime << "maxmaxtime" << maxmaxtime;
 
 }
