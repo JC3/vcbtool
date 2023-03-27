@@ -477,20 +477,35 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
             attrs["pos"] = QString("%1,%2%3").arg(posx).arg(posy).arg(settings.positions == GraphSettings::Absolute ? "!" : "");
         }
 
+        if (cgraph[id]->critpath)
+            attrs["color"] = "red";
+
         QStringList attrstrs;
         for (QString k : attrs.keys())
             attrstrs += k + "=\"" + attrs[k] + "\"";
         QString attrstr = attrstrs.join(",");
 
         if (cluster != "")
-            dot.append(QString("  subgraph cluster_%3 { %1[%2] };").arg(id).arg(attrstr));
+            dot.append(QString("  subgraph cluster_%3 { %1[%2] };").arg(id).arg(attrstr).arg(cluster));
         else
             dot.append(QString("  %1[%2];").arg(id).arg(attrstr));
 
     }
 
     for (QPair conn : graph.connections) {
-        dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
+
+        QMap<QString,QString> attrs;
+
+        if (cgraph[conn.first]->critpath && cgraph[conn.second]->critpath)
+            attrs["color"] = "red";
+
+        QStringList attrstrs;
+        for (QString k : attrs.keys())
+            attrstrs += k + "=\"" + attrs[k] + "\"";
+        QString attrstr = attrstrs.join(",");
+
+        dot.append(QString("  %1->%2[%3];").arg(conn.first).arg(conn.second).arg(attrstr));
+
     }
 
     deleteComplexGraph(cgraph);
@@ -630,8 +645,10 @@ void Compiler::computeTimings (ComplexGraph &graph) {
             compute(to, nexttickmin, nexttickmax);
     };
 
-    for (Node *node : graph.values())
+    for (Node *node : graph.values()) {
         node->mintiming = node->maxtiming = -1;
+        node->critpath = false;
+    }
 
     for (Node *node : graph.values())
         if (node->purpose == Node::Input)
@@ -646,5 +663,23 @@ void Compiler::computeTimings (ComplexGraph &graph) {
         }
     }
     qDebug() << "maxmintime" << maxmintime << "minmaxtime" << minmaxtime << "maxmaxtime" << maxmaxtime;
+
+    QList<Node *> critnodes;
+    for (Node *node : graph.values())
+        if (node->purpose == Node::Output && node->maxtiming == maxmaxtime) {
+            critnodes.append(node);
+            qDebug() << "  crit node type" << Desc(node->type);
+        }
+
+    while (!critnodes.empty()) {
+        QSet<Node *> prev;
+        for (Node *node : critnodes) {
+            node->critpath = true;
+            for (Node *from : node->from)
+                if (from->maxtiming >= node->maxtiming - 1)
+                    prev.insert(from);
+        }
+        critnodes = prev.values();
+    }
 
 }

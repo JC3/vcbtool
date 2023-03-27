@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QSettings>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"

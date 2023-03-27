@@ -145,7 +145,8 @@ private:
         Component type;
         Purpose purpose;
         int mintiming, maxtiming;
-        Node (int id, Component type) : id(id), type(type), purpose(Other), mintiming(-1), maxtiming(-1) { }
+        bool critpath;
+        Node (int id, Component type) : id(id), type(type), purpose(Other), mintiming(-1), maxtiming(-1), critpath(false) { }
         ~Node () {
             for (Node *in : from) in->to.removeOne(this);
             for (Node *out : to) out->from.removeOne(this);
