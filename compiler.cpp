@@ -358,6 +358,11 @@ Compiler::Component Compiler::Comp (Blueprint::Ink ink) {
 }
 
 
+//#############################################################################
+// technically all the compiler code was above. everything below is analysis.
+//#############################################################################
+
+
 QString Compiler::Desc (Component comp) {
 
     static const QMap<Component,QString> s = {
@@ -415,21 +420,95 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildDot (bool compressed) const {
+QStringList Compiler::buildGraphViz (GraphSettings settings) const {
 
-    SimpleGraph graph = compressed ? compressedConnections() : sgraph_;
+    if (settings.timings)
+        settings.ioclusters = false;
+
+    SimpleGraph graph = settings.compressed ? compressedConnections() : sgraph_;
 
     QStringList dot;
     dot.append("digraph {");
 
-    for (int id : graph.entities.keys()) {
+    /*for (int id : graph.entities.keys()) {
         QString label = Desc(graph.entities[id]);
         dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+    }*/
+
+    ComplexGraph cgraph = buildComplexGraph(graph);
+
+    for (Node *node : cgraph.values()) {
+        node->purpose = Node::Other;
+        if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
+            if (node->from.empty() && !node->to.empty())
+                node->purpose = Node::Input;
+            else if (node->to.empty() && !node->from.empty())
+                node->purpose = Node::Output;
+        }
+    }
+
+    if (settings.timings || settings.timinglabels)
+        computeTimings(cgraph);
+
+    for (int id : graph.entities.keys()) {
+
+        QMap<QString,QString> attrs;
+        QString cluster;
+
+        QString label = Desc(graph.entities[id]);
+        if (settings.timinglabels)
+            label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
+        attrs["label"] = label;
+
+        if (settings.ioclusters) {
+            switch (cgraph[id]->purpose) {
+            case Node::Input: cluster = "input"; break;
+            case Node::Output: cluster = "output"; break;
+            default: break;
+            }
+        } else if (settings.timings) {
+            int ticks = cgraph[id]->maxtiming;
+            if (ticks >= 0) cluster = QString("%1").arg(ticks);
+        }
+
+        if (settings.positions != GraphSettings::None) {
+            float posx = (id % bpwidth_) * settings.scale;
+            float posy = (bpheight_ - id / bpwidth_) * settings.scale;
+            attrs["pos"] = QString("%1,%2%3").arg(posx).arg(posy).arg(settings.positions == GraphSettings::Absolute ? "!" : "");
+        }
+
+        if (cgraph[id]->critpath)
+            attrs["color"] = "red";
+
+        QStringList attrstrs;
+        for (QString k : attrs.keys())
+            attrstrs += k + "=\"" + attrs[k] + "\"";
+        QString attrstr = attrstrs.join(",");
+
+        if (cluster != "")
+            dot.append(QString("  subgraph cluster_%3 { %1[%2] };").arg(id).arg(attrstr).arg(cluster));
+        else
+            dot.append(QString("  %1[%2];").arg(id).arg(attrstr));
+
     }
 
     for (QPair conn : graph.connections) {
-        dot.append(QString("  %1->%2;").arg(conn.first).arg(conn.second));
+
+        QMap<QString,QString> attrs;
+
+        if (cgraph[conn.first]->critpath && cgraph[conn.second]->critpath)
+            attrs["color"] = "red";
+
+        QStringList attrstrs;
+        for (QString k : attrs.keys())
+            attrstrs += k + "=\"" + attrs[k] + "\"";
+        QString attrstr = attrstrs.join(",");
+
+        dot.append(QString("  %1->%2[%3];").arg(conn.first).arg(conn.second).arg(attrstr));
+
     }
+
+    deleteComplexGraph(cgraph);
 
     dot.append("}");
     return dot;
@@ -439,37 +518,7 @@ QStringList Compiler::buildDot (bool compressed) const {
 
 Compiler::SimpleGraph Compiler::compressedConnections () const {
 
-    struct Node {
-        QVector<Node*> from;
-        QVector<Node*> to;
-        int id;
-        Component type;
-        Node (int id, Component type) : id(id), type(type) { }
-        ~Node () {
-            for (Node *in : from) in->to.removeOne(this);
-            for (Node *out : to) out->from.removeOne(this);
-        }
-    };
-
-    const auto connectNode = [] (Node *from, Node *to) {
-        from->to.append(to);
-        to->from.append(from);
-    };
-
-    QMap<int,Node *> nodes;
-
-    // create nodes
-    for (int id : sgraph_.entities.keys())
-        nodes[id] = new Node(id, sgraph_.entities[id]);
-
-    // connect nodes
-    for (QPair<int,int> conn : sgraph_.connections) {
-        Node *from = nodes[conn.first];
-        Node *to = nodes[conn.second];
-        assert(from);
-        assert(to);
-        connectNode(from, to);
-    }
+    ComplexGraph nodes = buildComplexGraph(sgraph_);
 
     // remove traces
     {
@@ -478,7 +527,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
             if (IsTrace(node->type) && node->from.size() == 1 && node->to.size() != 0) {
                 for (Node *from : node->from)
                     for (Node *to : node->to)
-                        connectNode(from, to);
+                        Node::connect(from, to);
                 nodes.remove(node->id);
                 delete node;
             }
@@ -496,7 +545,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
         for (Node *to : node->to)
             cgraph.connections.insert({node->id, to->id});
 
-    qDeleteAll(nodes.values());
+    deleteComplexGraph(nodes);
     return cgraph;
 
 }
@@ -504,39 +553,7 @@ Compiler::SimpleGraph Compiler::compressedConnections () const {
 
 QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 
-    struct Node {
-        QVector<Node*> from;
-        QVector<Node*> to;
-        int id;
-        Component type;
-        Node (int id, Component type) : id(id), type(type) { }
-        ~Node () {
-            for (Node *in : from) in->to.removeOne(this);
-            for (Node *out : to) out->from.removeOne(this);
-        }
-    };
-
-    const auto connectNode = [] (Node *from, Node *to) {
-        from->to.append(to);
-        to->from.append(from);
-    };
-
-    QMap<int,Node *> nodes;
-
-    // create nodes
-    for (int id : sgraph_.entities.keys())
-        nodes[id] = new Node(id, sgraph_.entities[id]);
-
-    // connect nodes
-    for (QPair<int,int> conn : sgraph_.connections) {
-        Node *from = nodes[conn.first];
-        Node *to = nodes[conn.second];
-        assert(from);
-        assert(to);
-        connectNode(from, to);
-    }
-
-    //----
+    ComplexGraph nodes = buildComplexGraph(sgraph_);
 
     QStringList results;
 
@@ -587,10 +604,82 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
         inputcheck(node, Wifi3, 1, 1);
     }
 
-    //----
-
-    qDeleteAll(nodes.values());
+    deleteComplexGraph(nodes);
 
     return results;
+
+}
+
+
+Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
+
+    ComplexGraph nodes;
+
+    // create nodes
+    for (int id : sgraph.entities.keys())
+        nodes[id] = new Node(id, sgraph.entities[id]);
+
+    // connect nodes
+    for (QPair<int,int> conn : sgraph.connections) {
+        Node *from = nodes[conn.first];
+        Node *to = nodes[conn.second];
+        assert(from);
+        assert(to);
+        Node::connect(from, to);
+    }
+
+    return nodes;
+
+}
+
+
+void Compiler::computeTimings (ComplexGraph &graph) {
+
+    // naive implementation, will freeze on loops!
+    const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
+        node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
+        node->maxtiming = std::max(node->maxtiming, tickmax);
+        int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
+        int nexttickmax = IsTrace(node->type) ? node->maxtiming : (node->maxtiming + 1);
+        for (Node *to : node->to)
+            compute(to, nexttickmin, nexttickmax);
+    };
+
+    for (Node *node : graph.values()) {
+        node->mintiming = node->maxtiming = -1;
+        node->critpath = false;
+    }
+
+    for (Node *node : graph.values())
+        if (node->purpose == Node::Input)
+            compute(node, 0, 0);
+
+    int maxmintime = -1, maxmaxtime = -1, minmaxtime = -1;
+    for (Node *node : graph.values()) {
+        if (node->purpose == Node::Output) {
+            maxmintime = std::max(maxmintime, node->mintiming);
+            minmaxtime = (minmaxtime == -1 ? node->maxtiming : std::min(minmaxtime, node->maxtiming));
+            maxmaxtime = std::max(maxmaxtime, node->maxtiming);
+        }
+    }
+    qDebug() << "maxmintime" << maxmintime << "minmaxtime" << minmaxtime << "maxmaxtime" << maxmaxtime;
+
+    QList<Node *> critnodes;
+    for (Node *node : graph.values())
+        if (node->purpose == Node::Output && node->maxtiming == maxmaxtime) {
+            critnodes.append(node);
+            qDebug() << "  crit node type" << Desc(node->type);
+        }
+
+    while (!critnodes.empty()) {
+        QSet<Node *> prev;
+        for (Node *node : critnodes) {
+            node->critpath = true;
+            for (Node *from : node->from)
+                if (from->maxtiming >= node->maxtiming - 1)
+                    prev.insert(from);
+        }
+        critnodes = prev.values();
+    }
 
 }

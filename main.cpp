@@ -8,6 +8,8 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+    QApplication::setOrganizationName("jasonc");
+    QApplication::setApplicationName("vcbtool");
     QApplication a(argc, argv);
     MainWindow w;
     w.show();

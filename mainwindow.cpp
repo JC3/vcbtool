@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <QSettings>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -160,8 +161,14 @@ void MainWindow::on_btnNetlistGraph_clicked()
     try {
         Blueprint bp(ui_->txtNetlistBP->toPlainText());
         Compiler c(&bp);
-        bool clean = ui_->chkCleanGraph->isChecked();
-        ui_->txtNetlistOut->setPlainText(c.buildDot(clean).join("\n"));
+        Compiler::GraphSettings s;
+        s.compressed = ui_->chkCleanGraph->isChecked();
+        s.ioclusters = ui_->chkClusterIO->isChecked();
+        s.timings = ui_->chkClusterTiming->isChecked();
+        s.timinglabels = ui_->chkLabelTiming->isChecked();
+        s.positions = (Compiler::GraphSettings::PosMode)ui_->cbPositions->currentIndex();
+        s.scale = ui_->txtPosScale->text().toFloat();
+        ui_->txtNetlistOut->setPlainText(c.buildGraphViz(s).join("\n"));
     } catch (const std::exception &x) {
         QMessageBox::critical(this, "Error", x.what());
     }

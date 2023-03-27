@@ -50,6 +50,11 @@ To generate a GraphViz graph from a blueprint:
 Parameters:
 
 - Clean Graph: If selected, traces that don't affect the behavior of the circuit (i.e. trace nodes with a single input and at least one output) will be removed from the graph.
+- Cluster I/O: Try to detect inputs/outputs then cluster them in subgraphs.
+- Cluster Timings: Cluster subgraphs by tick. Disables Cluster I/O.
+- Label Timings: Label nodes with min/max tick timings.
+- Positions: Position nodes based on position in circuit. Only works with engines like "neato" or "fdp", not "dot".
+- Scale: If positions enabled, scale positions by this amount.
 
 To generate a static analysis problem report from a blueprint:
 
