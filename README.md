@@ -38,6 +38,31 @@ Notes:
 - The LSB of the address will be at the bottom of the ROM circuit.
 - The LSB of the data will be at the top of the ROM circuit. Support for reversing data bit order is a TODO.
 
+## Analysis Tool
+
+To generate a GraphViz graph from a blueprint:
+
+1. Paste blueprint string
+2. Set settings
+3. Click "Generate graph"
+4. Copy generated GraphViz file
+
+Parameters:
+
+- Clean Graph: If selected, traces that don't affect the behavior of the circuit (i.e. trace nodes with a single input and at least one output) will be removed from the graph.
+
+To generate a static analysis problem report from a blueprint:
+
+1. Paste blueprint string
+2. Set settings
+3. Click "Check problems"
+4. Read report
+
+Parameters:
+
+- Unconnected Traces: List traces that aren't written to or aren't read from
+- <2-Input Gates: Warn about gates that normally have 2 inputs (like AND) but only have 1
+
 ---
 
 Thanks ErikBot on Discord for the [general ROM design](https://www.youtube.com/watch?v=0oq0s3bW5Zk).
