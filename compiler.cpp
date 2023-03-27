@@ -451,8 +451,12 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
         computeTimings(cgraph);
 
     for (int id : graph.entities.keys()) {
-        QString label = Desc(graph.entities[id]);
+
+        QMap<QString,QString> attrs;
         QString cluster;
+
+        attrs["label"] = Desc(graph.entities[id]);
+
         if (settings.ioclusters) {
             switch (cgraph[id]->purpose) {
             case Node::Input: cluster = "input"; break;
@@ -463,10 +467,23 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
             int ticks = cgraph[id]->maxtiming;
             if (ticks >= 0) cluster = QString("%1").arg(ticks);
         }
+
+        if (settings.positions != GraphSettings::None) {
+            float posx = (id % bpwidth_) * settings.scale;
+            float posy = (bpheight_ - id / bpwidth_) * settings.scale;
+            attrs["pos"] = QString("%1,%2%3").arg(posx).arg(posy).arg(settings.positions == GraphSettings::Absolute ? "!" : "");
+        }
+
+        QStringList attrstrs;
+        for (QString k : attrs.keys())
+            attrstrs += k + "=\"" + attrs[k] + "\"";
+        QString attrstr = attrstrs.join(",");
+
         if (cluster != "")
-            dot.append(QString("  subgraph cluster_%3 { %1[label=\"%2\"] };").arg(id).arg(label).arg(cluster));
+            dot.append(QString("  subgraph cluster_%3 { %1[%2] };").arg(id).arg(attrstr));
         else
-            dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
+            dot.append(QString("  %1[%2];").arg(id).arg(attrstr));
+
     }
 
     for (QPair conn : graph.connections) {

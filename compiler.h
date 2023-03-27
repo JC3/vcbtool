@@ -103,10 +103,13 @@ public:
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
     struct GraphSettings {
+        enum PosMode { None=0, Absolute=1, Suggested=2 };
         bool compressed;
         bool ioclusters;
         bool timings;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false) { }
+        PosMode positions;
+        float scale;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), positions(None), scale(1.0f) { }
     };
 
     QStringList buildGraphViz (GraphSettings settings) const;
