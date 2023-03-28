@@ -420,7 +420,9 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildGraphViz (GraphSettings settings) const {
+Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
+
+    GraphResults results;
 
     if (settings.timings)
         settings.ioclusters = false;
@@ -448,7 +450,7 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
     }
 
     if (settings.timings || settings.timinglabels)
-        computeTimings(cgraph);
+        results.stats = computeTimings(cgraph);
 
     for (int id : graph.entities.keys()) {
 
@@ -511,7 +513,9 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
     deleteComplexGraph(cgraph);
 
     dot.append("}");
-    return dot;
+
+    results.graphviz = dot;
+    return results;
 
 }
 
@@ -633,7 +637,9 @@ Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
 }
 
 
-void Compiler::computeTimings (ComplexGraph &graph) {
+Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
+
+    TimingStats stats;
 
     // naive implementation, will freeze on loops!
     const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
@@ -664,12 +670,33 @@ void Compiler::computeTimings (ComplexGraph &graph) {
     }
     qDebug() << "maxmintime" << maxmintime << "minmaxtime" << minmaxtime << "maxmaxtime" << maxmaxtime;
 
+    stats.maxmintime = maxmintime;
+    stats.minmaxtime = minmaxtime;
+    stats.maxmaxtime = maxmaxtime;
+
+    bool critpathEndsWithEntity = false;
     QList<Node *> critnodes;
     for (Node *node : graph.values())
         if (node->purpose == Node::Output && node->maxtiming == maxmaxtime) {
             critnodes.append(node);
             qDebug() << "  crit node type" << Desc(node->type);
+            if (!IsTrace(node->type))
+                critpathEndsWithEntity = true;
         }
+
+    // timing is signal *arrival* time so our circuit actually takes one tick longer if
+    // the output node is not a trace.
+    //stats.critpathlen = (critpathEndsWithEntity ? (maxmaxtime + 1) : maxmaxtime);
+    // actually, for now just leave it because current output node detection will force it
+    // to be either a trace or an LED, and it's not really useful to count the LED.
+    stats.critpathlen = maxmaxtime;
+    // in fact, we should probably also subtract 1 if the input nodes are latches because
+    // that usually just means the blueprint contained latches for test input. but that's
+    // a little more complicated and it would be better to make input latches just not
+    // count for a tick in the timing analysis.
+    // hmm the best approach is probably a checkbox that says "skip input latches" in tick
+    // counts.
+    // TODO
 
     while (!critnodes.empty()) {
         QSet<Node *> prev;
@@ -681,5 +708,7 @@ void Compiler::computeTimings (ComplexGraph &graph) {
         }
         critnodes = prev.values();
     }
+
+    return stats;
 
 }

@@ -330,17 +330,14 @@
         <item row="0" column="3">
          <widget class="QPlainTextEdit" name="txtNetlistOut"/>
         </item>
-        <item row="0" column="0">
-         <widget class="QPlainTextEdit" name="txtNetlistBP">
-          <property name="plainText">
-           <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
-          </property>
-          <property name="placeholderText">
-           <string>Blueprint string</string>
+        <item row="1" column="3">
+         <widget class="QLabel" name="lblGraphStats">
+          <property name="text">
+           <string>-</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="1" rowspan="2">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <spacer name="verticalSpacer_5">
@@ -518,6 +515,16 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item row="0" column="0" rowspan="2">
+         <widget class="QPlainTextEdit" name="txtNetlistBP">
+          <property name="plainText">
+           <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
+          </property>
+          <property name="placeholderText">
+           <string>Blueprint string</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

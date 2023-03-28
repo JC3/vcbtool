@@ -168,7 +168,13 @@ void MainWindow::on_btnNetlistGraph_clicked()
         s.timinglabels = ui_->chkLabelTiming->isChecked();
         s.positions = (Compiler::GraphSettings::PosMode)ui_->cbPositions->currentIndex();
         s.scale = ui_->txtPosScale->text().toFloat();
-        ui_->txtNetlistOut->setPlainText(c.buildGraphViz(s).join("\n"));
+        Compiler::GraphResults r = c.buildGraphViz(s);
+        ui_->txtNetlistOut->setPlainText(r.graphviz.join("\n"));
+        if (r.stats.critpathlen != -1) {
+            QString str = QString("minmax=%1 maxmin=%2 crit=%3").arg(r.stats.minmaxtime).arg(r.stats.maxmintime).arg(r.stats.critpathlen);
+            ui_->lblGraphStats->setText(str);
+        } else
+            ui_->lblGraphStats->setText("-");
     } catch (const std::exception &x) {
         QMessageBox::critical(this, "Error", x.what());
     }

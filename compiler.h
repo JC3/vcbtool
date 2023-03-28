@@ -102,6 +102,14 @@ public:
 
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
+    struct TimingStats {
+        int minmaxtime;
+        int maxmintime;
+        int maxmaxtime;
+        int critpathlen;
+        TimingStats () : minmaxtime(-1), maxmintime(-1), maxmaxtime(-1), critpathlen(-1) { }
+    };
+
     struct GraphSettings {
         enum PosMode { None=0, Absolute=1, Suggested=2 };
         bool compressed;
@@ -113,7 +121,12 @@ public:
         GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f) { }
     };
 
-    QStringList buildGraphViz (GraphSettings settings) const;
+    struct GraphResults {
+        QStringList graphviz;
+        TimingStats stats;
+    };
+
+    GraphResults buildGraphViz (GraphSettings settings) const;
 
     struct AnalysisSettings {
         bool checkTraces;
@@ -166,7 +179,7 @@ private:
         graph.clear();
     }
 
-    static void computeTimings (ComplexGraph &graph);
+    static TimingStats computeTimings (ComplexGraph &graph);
 
 };
 
