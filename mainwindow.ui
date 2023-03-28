@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>701</width>
-    <height>408</height>
+    <width>709</width>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -411,6 +411,16 @@
            <widget class="QCheckBox" name="chkCleanGraph">
             <property name="text">
              <string>Clean Graph</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkSquareIO">
+            <property name="text">
+             <string>Square I/O</string>
             </property>
             <property name="checked">
              <bool>true</bool>

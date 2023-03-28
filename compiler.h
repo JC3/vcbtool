@@ -118,7 +118,8 @@ public:
         bool timinglabels;
         PosMode positions;
         float scale;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f) { }
+        bool squareio;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false) { }
     };
 
     struct GraphResults {

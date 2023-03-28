@@ -460,6 +460,8 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
         QString label = Desc(graph.entities[id]);
         if (settings.timinglabels)
             label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
+        if (cgraph[id]->isloop)
+            label += "*";
         attrs["label"] = label;
 
         if (settings.ioclusters) {
@@ -471,6 +473,11 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
         } else if (settings.timings) {
             int ticks = cgraph[id]->maxtiming;
             if (ticks >= 0) cluster = QString("%1").arg(ticks);
+        }
+
+        if (settings.squareio) {
+            if (cgraph[id]->purpose != Node::Other)
+                attrs["shape"] = "box";
         }
 
         if (settings.positions != GraphSettings::None) {
