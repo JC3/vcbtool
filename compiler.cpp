@@ -420,7 +420,9 @@ QString Compiler::Desc (Component comp) {
 }
 
 
-QStringList Compiler::buildGraphViz (GraphSettings settings) const {
+Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
+
+    GraphResults results;
 
     if (settings.timings)
         settings.ioclusters = false;
@@ -448,7 +450,7 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
     }
 
     if (settings.timings || settings.timinglabels)
-        computeTimings(cgraph);
+        results.stats = computeTimings(cgraph);
 
     for (int id : graph.entities.keys()) {
 
@@ -458,6 +460,8 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
         QString label = Desc(graph.entities[id]);
         if (settings.timinglabels)
             label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
+        if (cgraph[id]->isloop)
+            label += "*";
         attrs["label"] = label;
 
         if (settings.ioclusters) {
@@ -469,6 +473,11 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
         } else if (settings.timings) {
             int ticks = cgraph[id]->maxtiming;
             if (ticks >= 0) cluster = QString("%1").arg(ticks);
+        }
+
+        if (settings.squareio) {
+            if (cgraph[id]->purpose != Node::Other)
+                attrs["shape"] = "box";
         }
 
         if (settings.positions != GraphSettings::None) {
@@ -496,8 +505,12 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
 
         QMap<QString,QString> attrs;
 
-        if (cgraph[conn.first]->critpath && cgraph[conn.second]->critpath)
-            attrs["color"] = "red";
+        {
+            const Node *from = cgraph[conn.first];
+            const Node *to = cgraph[conn.second];
+            if (from->critpath && to->critpath && from->maxtiming >= to->maxtiming - 1)
+                attrs["color"] = "red";
+        }
 
         QStringList attrstrs;
         for (QString k : attrs.keys())
@@ -511,7 +524,9 @@ QStringList Compiler::buildGraphViz (GraphSettings settings) const {
     deleteComplexGraph(cgraph);
 
     dot.append("}");
-    return dot;
+
+    results.graphviz = dot;
+    return results;
 
 }
 
@@ -633,21 +648,33 @@ Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
 }
 
 
-void Compiler::computeTimings (ComplexGraph &graph) {
+Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
+
+    TimingStats stats;
 
     // naive implementation, will freeze on loops!
     const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
+        if (node->hit) {
+            node->isloop = true;
+            qDebug() << "node" << node->id << Desc(node->type) << "is loop; breaking...";
+            return;
+        }
         node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
         node->maxtiming = std::max(node->maxtiming, tickmax);
         int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
         int nexttickmax = IsTrace(node->type) ? node->maxtiming : (node->maxtiming + 1);
-        for (Node *to : node->to)
+        for (Node *to : node->to) {
+            node->hit = true;
             compute(to, nexttickmin, nexttickmax);
+            node->hit = false;
+        }
     };
 
     for (Node *node : graph.values()) {
         node->mintiming = node->maxtiming = -1;
         node->critpath = false;
+        node->hit = false;
+        node->isloop = false;
     }
 
     for (Node *node : graph.values())
@@ -664,22 +691,49 @@ void Compiler::computeTimings (ComplexGraph &graph) {
     }
     qDebug() << "maxmintime" << maxmintime << "minmaxtime" << minmaxtime << "maxmaxtime" << maxmaxtime;
 
+    stats.maxmintime = maxmintime;
+    stats.minmaxtime = minmaxtime;
+    stats.maxmaxtime = maxmaxtime;
+
+    bool critpathEndsWithEntity = false;
     QList<Node *> critnodes;
     for (Node *node : graph.values())
         if (node->purpose == Node::Output && node->maxtiming == maxmaxtime) {
             critnodes.append(node);
             qDebug() << "  crit node type" << Desc(node->type);
+            if (!IsTrace(node->type))
+                critpathEndsWithEntity = true;
         }
 
+    // timing is signal *arrival* time so our circuit actually takes one tick longer if
+    // the output node is not a trace.
+    //stats.critpathlen = (critpathEndsWithEntity ? (maxmaxtime + 1) : maxmaxtime);
+    // actually, for now just leave it because current output node detection will force it
+    // to be either a trace or an LED, and it's not really useful to count the LED.
+    stats.critpathlen = maxmaxtime;
+    // in fact, we should probably also subtract 1 if the input nodes are latches because
+    // that usually just means the blueprint contained latches for test input. but that's
+    // a little more complicated and it would be better to make input latches just not
+    // count for a tick in the timing analysis.
+    // hmm the best approach is probably a checkbox that says "skip input latches" in tick
+    // counts.
+    // TODO
+
+    QSet<Node *> visited;
     while (!critnodes.empty()) {
         QSet<Node *> prev;
         for (Node *node : critnodes) {
-            node->critpath = true;
-            for (Node *from : node->from)
-                if (from->maxtiming >= node->maxtiming - 1)
-                    prev.insert(from);
+            if (!visited.contains(node)) {
+                visited.insert(node);
+                node->critpath = true;
+                for (Node *from : node->from)
+                    if (from->maxtiming >= node->maxtiming - 1)
+                        prev.insert(from);
+            }
         }
         critnodes = prev.values();
     }
+
+    return stats;
 
 }

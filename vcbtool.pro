@@ -1,3 +1,7 @@
+QMAKE_TARGET_DESCRIPTION = "VCB Tool"
+VERSION = 1.2.1
+DEFINES += VCBTOOL_VERSION='\\"$$VERSION\\"'
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
