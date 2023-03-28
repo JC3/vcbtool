@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QSettings>
+#include <QClipboard>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -182,3 +183,44 @@ void MainWindow::on_btnNetlistGraph_clicked()
     }
 }
 
+
+void MainWindow::on_cbTextFont_activated(int)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_txtTextContent_textChanged(const QString &)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::doGenerateText () {
+    try {
+
+        static const QMap<int,QString> FontFiles = {
+            { 0, "font_3x5.png" }
+        };
+
+        QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
+        if (fontfile == "")
+            throw runtime_error("invalid internal font id");
+        QImage fontimage;
+        if (!fontimage.load(fontfile))
+            throw runtime_error(("couldn't load " + fontfile).toStdString());
+
+        QString text = ui_->txtTextContent->text();
+
+        Blueprint *bp = Circuits::Text(fontimage, text);
+        ui_->txtTextBP->setPlainText(bp->bpString());
+
+        if (ui_->chkTextAutoCopy->isChecked())
+            QGuiApplication::clipboard()->setText(bp->bpString());
+
+        delete bp;
+
+    } catch (const std::exception &x) {
+        QMessageBox::critical(this, "Error", x.what());
+    }
+}
