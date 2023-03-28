@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui_->setupUi(this);
     ui_->lblROMWarning->setText("");
+    setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
 }
 
 MainWindow::~MainWindow()
