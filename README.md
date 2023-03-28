@@ -38,6 +38,16 @@ Notes:
 - The LSB of the address will be at the bottom of the ROM circuit.
 - The LSB of the data will be at the top of the ROM circuit. Support for reversing data bit order is a TODO.
 
+## Generate Text
+
+To generate a blueprint containing text:
+
+1. Enter text.
+2. Copy blueprint string.
+3. Paste blueprint into VCB.
+
+If "auto copy to clipboard" is checked then blueprint string will already be on clipboard.
+
 ## Analysis Tool
 
 To generate a GraphViz graph from a blueprint:
