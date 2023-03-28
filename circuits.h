@@ -6,6 +6,7 @@
 namespace Circuits {
 
 Blueprint * ROM (int addressBits, int dataBits, const QVector<quint64> &data);
+Blueprint * Text (QImage font, QString text);
 
 }
 

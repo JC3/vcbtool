@@ -1,5 +1,8 @@
 #include "circuits.h"
 #include <QDebug>
+#include <stdexcept>
+
+using std::runtime_error;
 
 namespace Circuits {
 
@@ -103,5 +106,51 @@ Blueprint * ROM (int addressBits, int dataBits, const QVector<quint64> &data) {
     return bp;
 
 }
+
+
+// todo: specify layer and ink as parameters
+Blueprint * Text (QImage font, QString text) {
+
+    constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'";
+    constexpr int charsetlen = sizeof(charset) - 1;
+
+    if (font.width() % charsetlen != 0)
+        throw runtime_error("font image width does not match character set length");
+
+    const QByteArray str = text.toUpper().toLatin1();
+
+    font = font.convertToFormat(QImage::Format_RGB888);
+
+    const int charwidth = font.width() / charsetlen;
+    const int charheight = font.height();
+    const int bpwidth = (charwidth + 1) * str.size();
+    const int bpheight = charheight;
+
+    Blueprint *bp = new Blueprint(bpwidth, bpheight);
+    Blueprint::Ink ink = Blueprint::Annotation;
+
+    for (int k = 0; k < str.size(); ++ k) {
+        const char ch = str[k];
+        const char *chloc = strchr(charset, ch);
+        if (!chloc) { qDebug() << "skipping undefined character" << ch; continue; }
+        const int index = chloc - charset;
+        const int srcx0 = index * charwidth;
+        const int dstx0 = k * (charwidth + 1);
+        for (int cy = 0; cy < charheight; ++ cy) {
+            for (int cx = 0; cx < charwidth; ++ cx) {
+                const int srcx = srcx0 + cx;
+                const int srcy = cy;
+                const int dstx = dstx0 + cx;
+                const int dsty = cy;
+                QRgb srcpix = font.pixel(srcx, srcy);
+                if (qRed(srcpix) < 128) bp->set(dstx, dsty, ink);
+            }
+        }
+    }
+
+    return bp;
+
+}
+
 
 }

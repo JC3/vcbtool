@@ -38,6 +38,16 @@ Notes:
 - The LSB of the address will be at the bottom of the ROM circuit.
 - The LSB of the data will be at the top of the ROM circuit. Support for reversing data bit order is a TODO.
 
+## Generate Text
+
+To generate a blueprint containing text:
+
+1. Enter text.
+2. Copy blueprint string.
+3. Paste blueprint into VCB.
+
+If "auto copy to clipboard" is checked then blueprint string will already be on clipboard.
+
 ## Analysis Tool
 
 To generate a GraphViz graph from a blueprint:
@@ -51,6 +61,7 @@ Parameters:
 
 - Clean Graph: If selected, traces that don't affect the behavior of the circuit (i.e. trace nodes with a single input and at least one output) will be removed from the graph.
 - Cluster I/O: Try to detect inputs/outputs then cluster them in subgraphs.
+- Square I/O: Use box shape for I/O nodes.
 - Cluster Timings: Cluster subgraphs by tick. Disables Cluster I/O.
 - Label Timings: Label nodes with min/max tick timings.
 - Positions: Position nodes based on position in circuit. Only works with engines like "neato" or "fdp", not "dot".

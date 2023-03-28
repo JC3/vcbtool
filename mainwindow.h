@@ -25,10 +25,13 @@ private slots:
     void on_btnROMGenerate_clicked();
     void on_btnNetlistCheck_clicked();
     void on_btnNetlistGraph_clicked();
+    void on_cbTextFont_activated(int index);
+    void on_txtTextContent_textChanged(const QString &arg1);
 
 private:
     Ui::MainWindow *ui_;
     QByteArray romdata_;
     Blueprint::Layer selectedConversionLayer () const;
+    void doGenerateText ();
 };
 #endif // MAINWINDOW_H
