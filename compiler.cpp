@@ -498,8 +498,12 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
         QMap<QString,QString> attrs;
 
-        if (cgraph[conn.first]->critpath && cgraph[conn.second]->critpath)
-            attrs["color"] = "red";
+        {
+            const Node *from = cgraph[conn.first];
+            const Node *to = cgraph[conn.second];
+            if (from->critpath && to->critpath && from->maxtiming >= to->maxtiming - 1)
+                attrs["color"] = "red";
+        }
 
         QStringList attrstrs;
         for (QString k : attrs.keys())
