@@ -647,17 +647,27 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
 
     // naive implementation, will freeze on loops!
     const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
+        if (node->hit) {
+            node->isloop = true;
+            qDebug() << "node" << node->id << Desc(node->type) << "is loop; breaking...";
+            return;
+        }
         node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
         node->maxtiming = std::max(node->maxtiming, tickmax);
         int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
         int nexttickmax = IsTrace(node->type) ? node->maxtiming : (node->maxtiming + 1);
-        for (Node *to : node->to)
+        for (Node *to : node->to) {
+            node->hit = true;
             compute(to, nexttickmin, nexttickmax);
+            node->hit = false;
+        }
     };
 
     for (Node *node : graph.values()) {
         node->mintiming = node->maxtiming = -1;
         node->critpath = false;
+        node->hit = false;
+        node->isloop = false;
     }
 
     for (Node *node : graph.values())
@@ -702,13 +712,17 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
     // counts.
     // TODO
 
+    QSet<Node *> visited;
     while (!critnodes.empty()) {
         QSet<Node *> prev;
         for (Node *node : critnodes) {
-            node->critpath = true;
-            for (Node *from : node->from)
-                if (from->maxtiming >= node->maxtiming - 1)
-                    prev.insert(from);
+            if (!visited.contains(node)) {
+                visited.insert(node);
+                node->critpath = true;
+                for (Node *from : node->from)
+                    if (from->maxtiming >= node->maxtiming - 1)
+                        prev.insert(from);
+            }
         }
         critnodes = prev.values();
     }
