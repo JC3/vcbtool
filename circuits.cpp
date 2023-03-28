@@ -6,7 +6,7 @@ using std::runtime_error;
 
 namespace Circuits {
 
-Blueprint * ROM (int addressBits, int dataBits, const QVector<quint64> &data) {
+Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QVector<quint64> &data) {
 
     const Blueprint::Ink trace = Blueprint::Trace1;
 
@@ -67,13 +67,12 @@ Blueprint * ROM (int addressBits, int dataBits, const QVector<quint64> &data) {
     for (quint64 address = 0; address < addresses; ++ address) {
 
         // ---- data bits
-        // lsb on top
         quint64 curdata = data.value(address);
-        row = 0;
+        row = (dataLSB == Top ? 0 : (2 * (dataBits - 1)));
         for (int bit = 0; bit < dataBits; ++ bit) {
             if (curdata & (1 << bit))
                 bp->set(col, row, Blueprint::Write);
-            row += 2;
+            row += (dataLSB == Top ? 2 : -2);
         }
 
         // ---- address bits

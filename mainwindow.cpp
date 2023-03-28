@@ -96,7 +96,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         bool bigEndian = (ui_->cbROMByteOrder->currentIndex() == 0);
         int dataBits = ui_->spnROMDataBits->value();
         int addrBits = ui_->spnROMAddrBits->value();
-        //bool reverseData = (ui_->cbROMBitOrder->currentIndex() == 0); // Circuits::ROM puts msb near address lines
+        Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
 
         const auto getWord = [&] (int offset) {
             if (offset < 0 || offset >= romdata_.size())
@@ -120,7 +120,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         for (int j = 0; j < romdata_.size(); j += wordSize)
             data.append(getWord(j));
 
-        Blueprint *bp = Circuits::ROM(addrBits, dataBits, data);
+        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, data);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
 
@@ -138,8 +138,7 @@ void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 
 void MainWindow::on_spnROMDataBits_valueChanged(int arg1)
 {
-    Q_UNUSED(arg1);
-    //ui_->cbROMBitOrder->setEnabled(arg1 > 1);
+    ui_->cbROMDataLSB->setEnabled(arg1 > 1);
 }
 
 

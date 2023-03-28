@@ -5,7 +5,9 @@
 
 namespace Circuits {
 
-Blueprint * ROM (int addressBits, int dataBits, const QVector<quint64> &data);
+enum ROMDataLSBSide { Bottom=0, Top=1 };
+
+Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QVector<quint64> &data);
 Blueprint * Text (QImage font, QString text);
 
 }
