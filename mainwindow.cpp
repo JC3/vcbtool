@@ -195,6 +195,42 @@ void MainWindow::on_txtTextContent_textChanged(const QString &)
 }
 
 
+void MainWindow::on_chkTextLogic_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_chkTextDecoOn_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_chkTextDecoOff_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_cbTextLogicInk_currentIndexChanged(int)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_clrTextDecoOn_colorChanged(const QColor &)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_clrTextDecoOff_colorChanged(const QColor &)
+{
+    doGenerateText();
+}
+
+
 void MainWindow::doGenerateText () {
     try {
 
@@ -210,8 +246,15 @@ void MainWindow::doGenerateText () {
             throw runtime_error(("couldn't load " + fontfile).toStdString());
 
         QString text = ui_->txtTextContent->text();
+        Blueprint::Ink logicInk, onInk, offInk;
+        if (ui_->chkTextLogic->isChecked())
+            logicInk = (ui_->cbTextLogicInk->currentIndex() == 0) ? Blueprint::Annotation : Blueprint::Filler;
+        if (ui_->chkTextDecoOn->isChecked())
+            onInk = ui_->clrTextDecoOn->selectedColor();
+        if (ui_->chkTextDecoOff->isChecked())
+            offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, text);
+        Blueprint *bp = Circuits::Text(fontimage, text, logicInk, onInk, offInk);
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())

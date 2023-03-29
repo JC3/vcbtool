@@ -15,6 +15,7 @@ CONFIG += c++17
 SOURCES += \
     blueprint.cpp \
     circuits.cpp \
+    colorselector.cpp \
     compiler.cpp \
     main.cpp \
     mainwindow.cpp
@@ -22,6 +23,7 @@ SOURCES += \
 HEADERS += \
     blueprint.h \
     circuits.h \
+    colorselector.h \
     compiler.h \
     mainwindow.h
 

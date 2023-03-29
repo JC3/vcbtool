@@ -108,7 +108,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 
 
 // todo: specify layer and ink as parameters
-Blueprint * Text (QImage font, QString text) {
+Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
     constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'";
     constexpr int charsetlen = sizeof(charset) - 1;
@@ -125,8 +125,12 @@ Blueprint * Text (QImage font, QString text) {
     const int bpwidth = (charwidth + 1) * str.size();
     const int bpheight = charheight;
 
+    QVector<QPair<Blueprint::Layer,Blueprint::Ink> > layerInks;
+    layerInks.append({Blueprint::Logic, logicInk});
+    layerInks.append({Blueprint::DecoOn, decoOnInk});
+    layerInks.append({Blueprint::DecoOff, decoOffInk});
+
     Blueprint *bp = new Blueprint(bpwidth, bpheight);
-    Blueprint::Ink ink = Blueprint::Annotation;
 
     for (int k = 0; k < str.size(); ++ k) {
         const char ch = str[k];
@@ -135,14 +139,20 @@ Blueprint * Text (QImage font, QString text) {
         const int index = chloc - charset;
         const int srcx0 = index * charwidth;
         const int dstx0 = k * (charwidth + 1);
-        for (int cy = 0; cy < charheight; ++ cy) {
-            for (int cx = 0; cx < charwidth; ++ cx) {
-                const int srcx = srcx0 + cx;
-                const int srcy = cy;
-                const int dstx = dstx0 + cx;
-                const int dsty = cy;
-                QRgb srcpix = font.pixel(srcx, srcy);
-                if (qRed(srcpix) < 128) bp->set(dstx, dsty, ink);
+        for (auto layerInk : layerInks) {
+            const Blueprint::Layer layer = layerInk.first;
+            const Blueprint::Ink ink = layerInk.second;
+            if (!ink.isValid())
+                continue;
+            for (int cy = 0; cy < charheight; ++ cy) {
+                for (int cx = 0; cx < charwidth; ++ cx) {
+                    const int srcx = srcx0 + cx;
+                    const int srcy = cy;
+                    const int dstx = dstx0 + cx;
+                    const int dsty = cy;
+                    QRgb srcpix = font.pixel(srcx, srcy);
+                    if (qRed(srcpix) < 128) bp->setPixel(layer, dstx, dsty, ink);
+                }
             }
         }
     }

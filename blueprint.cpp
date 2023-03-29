@@ -55,6 +55,7 @@ const Blueprint::Ink Blueprint::Wifi3 = QColor(255, 0, 143, 255);
 const Blueprint::Ink Blueprint::Annotation = QColor(58, 69, 81, 255);
 const Blueprint::Ink Blueprint::Filler = QColor(140, 171, 161, 255);
 const Blueprint::Ink Blueprint::Empty = QColor(0, 0, 0, 0);
+const Blueprint::Ink Blueprint::Invalid = QColor();
 
 Blueprint::Blueprint (int width, int height, QObject *parent) :
     QObject(parent)
