@@ -695,14 +695,14 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
     stats.minmaxtime = minmaxtime;
     stats.maxmaxtime = maxmaxtime;
 
-    bool critpathEndsWithEntity = false;
+    //bool critpathEndsWithEntity = false;
     QList<Node *> critnodes;
     for (Node *node : graph.values())
         if (node->purpose == Node::Output && node->maxtiming == maxmaxtime) {
             critnodes.append(node);
             qDebug() << "  crit node type" << Desc(node->type);
-            if (!IsTrace(node->type))
-                critpathEndsWithEntity = true;
+            //if (!IsTrace(node->type))
+                //critpathEndsWithEntity = true;
         }
 
     // timing is signal *arrival* time so our circuit actually takes one tick longer if
