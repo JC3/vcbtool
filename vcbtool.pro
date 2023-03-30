@@ -45,4 +45,5 @@ else:win32-g++: PRE_TARGETDEPS += $$PWD/contrib/zstd/static/libzstd_static.lib
 
 DISTFILES += \
     README.md \
-    font_3x5.png
+    font_3x5.png \
+    font_5x7.png

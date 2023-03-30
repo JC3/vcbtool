@@ -235,7 +235,8 @@ void MainWindow::doGenerateText () {
     try {
 
         static const QMap<int,QString> FontFiles = {
-            { 0, "font_3x5.png" }
+            { 0, "font_3x5.png" },
+            { 1, "font_5x7.png" }
         };
 
         QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
