@@ -44,4 +44,5 @@ win32:!win32-g++: PRE_TARGETDEPS +=   # zstd static lib cannot link with msvc
 else:win32-g++: PRE_TARGETDEPS += $$PWD/contrib/zstd/static/libzstd_static.lib
 
 DISTFILES += \
-    README.md
+    README.md \
+    font_3x5.png
