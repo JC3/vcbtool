@@ -15,14 +15,27 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
 {
+
     ui_->setupUi(this);
     ui_->lblROMWarning->setText("");
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
+
+    QSettings s;
+    ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
+    if (s.contains("geometry"))
+        setGeometry(s.value("geometry").toRect());
+
 }
 
 MainWindow::~MainWindow()
 {
+
+    QSettings s;
+    s.setValue("tab", ui_->tabWidget->currentIndex());
+    s.setValue("geometry", geometry());
+
     delete ui_;
+
 }
 
 Blueprint::Layer MainWindow::selectedConversionLayer () const {
