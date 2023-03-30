@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
     if (s.contains("geometry"))
         setGeometry(s.value("geometry").toRect());
+    ui_->actAlwaysOnTop->setChecked(s.value("top", false).toBool());
 
 }
 
@@ -33,6 +34,7 @@ MainWindow::~MainWindow()
     QSettings s;
     s.setValue("tab", ui_->tabWidget->currentIndex());
     s.setValue("geometry", geometry());
+    s.setValue("top", ui_->actAlwaysOnTop->isChecked());
 
     delete ui_;
 
@@ -280,3 +282,10 @@ void MainWindow::doGenerateText () {
         QMessageBox::critical(this, "Error", x.what());
     }
 }
+
+void MainWindow::on_actAlwaysOnTop_toggled(bool checked)
+{
+    setWindowFlag(Qt::WindowStaysOnTopHint, checked);
+    show();
+}
+

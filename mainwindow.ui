@@ -358,41 +358,6 @@
         <string>Generate Text</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
-        <item row="0" column="1">
-         <widget class="QLineEdit" name="txtTextContent">
-          <property name="placeholderText">
-           <string>Enter text here</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QPlainTextEdit" name="txtTextBP">
-          <property name="placeholderText">
-           <string>Blueprint</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QCheckBox" name="chkTextAutoCopy">
-          <property name="text">
-           <string>Auto copy to clipboard as you type</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QComboBox" name="cbTextFont">
-          <item>
-           <property name="text">
-            <string>3x5</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>5x7</string>
-           </property>
-          </item>
-         </widget>
-        </item>
         <item row="2" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_6">
           <property name="rightMargin">
@@ -559,6 +524,41 @@
            </spacer>
           </item>
          </layout>
+        </item>
+        <item row="0" column="0">
+         <widget class="QComboBox" name="cbTextFont">
+          <item>
+           <property name="text">
+            <string>3x5</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>5x7</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="2">
+         <widget class="QCheckBox" name="chkTextAutoCopy">
+          <property name="text">
+           <string>Auto copy to clipboard as you type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="txtTextContent">
+          <property name="placeholderText">
+           <string>Enter text here</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="txtTextBP">
+          <property name="placeholderText">
+           <string>Blueprint</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -782,6 +782,34 @@
     </item>
    </layout>
   </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>709</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuOptions">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <addaction name="actAlwaysOnTop"/>
+   </widget>
+   <addaction name="menuOptions"/>
+  </widget>
+  <action name="actAlwaysOnTop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Always On &amp;Top</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

@@ -33,6 +33,7 @@ private slots:
     void on_cbTextLogicInk_currentIndexChanged(int index);
     void on_clrTextDecoOn_colorChanged(const QColor &);
     void on_clrTextDecoOff_colorChanged(const QColor &);
+    void on_actAlwaysOnTop_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui_;
