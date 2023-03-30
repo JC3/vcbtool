@@ -181,7 +181,7 @@ void Blueprint::generateBlueprintString () const {
     for (Layer layer : { Logic, DecoOn, DecoOff }) {
         QImage image = layers_[layer];
         quint32 uncompressedSize = image.width() * image.height() * 4;
-        QByteArray compressedData(uncompressedSize * 2, 0);
+        QByteArray compressedData(uncompressedSize * 2 + 100, 0);
         compressedData.detach();
         quint32 compressedSize = ZSTD_compress(compressedData.data(), compressedData.size(), image.constBits(), uncompressedSize, 22);
         quint32 blockSize = 12 + compressedSize;
