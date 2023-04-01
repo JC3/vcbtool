@@ -1,5 +1,8 @@
 #include "circuits.h"
 #include <QDebug>
+#include <QFont>
+#include <QFontMetrics>
+#include <QPainter>
 #include <stdexcept>
 
 using std::runtime_error;
@@ -107,7 +110,6 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 }
 
 
-// todo: specify layer and ink as parameters
 Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _.:! +-*/\= "' |^& ()[]<> @~#,?%{}`¬
@@ -162,5 +164,29 @@ Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint:
 
 }
 
+
+Blueprint * Text (QFont font, int fontHeight, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
+
+    font.setPointSize(fontHeight);
+    font.setStyleStrategy((QFont::StyleStrategy)(QFont::NoAntialias | QFont::NoSubpixelAntialias));
+
+    QRect rcText = QFontMetrics(font).boundingRect(text);
+    rcText.moveTopLeft(QPoint(0, 0));
+    QImage textImage(rcText.size(), QImage::Format_ARGB32);
+    textImage.fill(QColor(0, 0, 0, 0));
+
+    {
+        QPainter p(&textImage);
+        p.setRenderHint(QPainter::Antialiasing, false);
+        p.setRenderHint(QPainter::TextAntialiasing, false);
+        p.setPen(logicInk);
+        p.setFont(font);
+        p.drawText(rcText, Qt::AlignLeft | Qt::AlignTop | Qt::TextSingleLine, text);
+    }
+
+    //throw std::runtime_error("Not implemented.");
+    return new Blueprint(textImage, Blueprint::Logic);
+
+}
 
 }

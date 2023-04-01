@@ -358,7 +358,14 @@
         <string>Generate Text</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
-        <item row="2" column="0" colspan="2">
+        <item row="5" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="txtTextBP">
+          <property name="placeholderText">
+           <string>Blueprint</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_6">
           <property name="rightMargin">
            <number>7</number>
@@ -525,6 +532,13 @@
           </item>
          </layout>
         </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QCheckBox" name="chkTextAutoCopy">
+          <property name="text">
+           <string>Auto copy to clipboard as you type</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <widget class="QComboBox" name="cbTextFont">
           <item>
@@ -537,13 +551,11 @@
             <string>5x7</string>
            </property>
           </item>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QCheckBox" name="chkTextAutoCopy">
-          <property name="text">
-           <string>Auto copy to clipboard as you type</string>
-          </property>
+          <item>
+           <property name="text">
+            <string>System</string>
+           </property>
+          </item>
          </widget>
         </item>
         <item row="0" column="1">
@@ -553,12 +565,52 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QPlainTextEdit" name="txtTextBP">
-          <property name="placeholderText">
-           <string>Blueprint</string>
-          </property>
-         </widget>
+        <item row="1" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QFontComboBox" name="cbTextSysFont">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spnTextSysFontHeight">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>3</number>
+            </property>
+            <property name="maximum">
+             <number>2048</number>
+            </property>
+            <property name="value">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>← Select &quot;System&quot; from dropdown to use these.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

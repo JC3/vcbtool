@@ -9,6 +9,7 @@ enum ROMDataLSBSide { Bottom=0, Top=1 };
 
 Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QVector<quint64> &data);
 Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk = Blueprint::Annotation, Blueprint::Ink decoOnInk = Blueprint::Invalid, Blueprint::Ink decoOffInk = Blueprint::Invalid);
+Blueprint * Text (QFont font, int fontHeight, QString text, Blueprint::Ink logicInk = Blueprint::Annotation, Blueprint::Ink decoOnInk = Blueprint::Invalid, Blueprint::Ink decoOffInk = Blueprint::Invalid);
 
 }
 

@@ -198,8 +198,10 @@ void MainWindow::on_btnNetlistGraph_clicked()
 }
 
 
-void MainWindow::on_cbTextFont_activated(int)
+void MainWindow::on_cbTextFont_activated(int index)
 {
+    ui_->cbTextSysFont->setEnabled(index == 2);
+    ui_->spnTextSysFontHeight->setEnabled(index == 2);
     doGenerateText();
 }
 
@@ -253,13 +255,7 @@ void MainWindow::doGenerateText () {
             { 0, "font_3x5.png" },
             { 1, "font_5x7.png" }
         };
-
-        QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
-        if (fontfile == "")
-            throw runtime_error("invalid internal font id");
-        QImage fontimage;
-        if (!fontimage.load(fontfile))
-            throw runtime_error(("couldn't load " + fontfile).toStdString());
+        static const int SystemFontChoiceId = 2;
 
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
@@ -270,7 +266,23 @@ void MainWindow::doGenerateText () {
         if (ui_->chkTextDecoOff->isChecked())
             offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, text, logicInk, onInk, offInk);
+        Blueprint *bp;
+
+        int fontSel = ui_->cbTextFont->currentIndex();
+        if (fontSel != SystemFontChoiceId) {
+            QString fontfile = FontFiles[fontSel];
+            if (fontfile == "")
+                throw runtime_error("invalid internal font id");
+            QImage fontimage;
+            if (!fontimage.load(fontfile))
+                throw runtime_error(("couldn't load " + fontfile).toStdString());
+            bp = Circuits::Text(fontimage, text, logicInk, onInk, offInk);
+        } else {
+            QFont font = ui_->cbTextSysFont->currentFont();
+            int height = ui_->spnTextSysFontHeight->value();
+            bp = Circuits::Text(font, height, text, logicInk, onInk, offInk);
+        }
+
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())
