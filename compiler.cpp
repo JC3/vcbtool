@@ -501,7 +501,7 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
     }
 
-    for (QPair conn : graph.connections) {
+    for (auto conn : graph.connections) {
 
         QMap<QString,QString> attrs;
 

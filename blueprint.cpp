@@ -183,7 +183,7 @@ void Blueprint::generateBlueprintString () const {
         quint32 uncompressedSize = image.width() * image.height() * 4;
         QByteArray compressedData(uncompressedSize * 2 + 100, 0);
         compressedData.detach();
-        quint32 compressedSize = ZSTD_compress(compressedData.data(), compressedData.size(), image.constBits(), uncompressedSize, 22);
+        quint32 compressedSize = (quint32)ZSTD_compress(compressedData.data(), compressedData.size(), image.constBits(), uncompressedSize, 22);
         quint32 blockSize = 12 + compressedSize;
         appendInt4(blockSize);
         appendInt4((quint32)layer);

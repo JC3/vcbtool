@@ -1,5 +1,7 @@
 debug/
 release/
+vcbtool-win64/
+vcbtool-*.zip
 
 # C++ objects and libs
 *.slo

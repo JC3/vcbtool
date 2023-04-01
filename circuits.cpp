@@ -12,7 +12,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 
     // things will go nuts if bit counts are too high but for now just let
     // things go nuts. maybe overflow checking some day.
-    quint64 addresses = 1 << addressBits;
+    quint64 addresses = 1ULL << addressBits;
     int width = 3 + 2 * addresses + 1;
     int height = 1 + 4 * (addressBits - 1) + 2 * dataBits;
     qDebug() << "rom will be" << width << "x" << height;
@@ -70,7 +70,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
         quint64 curdata = data.value(address);
         row = (dataLSB == Top ? 0 : (2 * (dataBits - 1)));
         for (int bit = 0; bit < dataBits; ++ bit) {
-            if (curdata & (1 << bit))
+            if (curdata & (1ULL << bit))
                 bp->set(col, row, Blueprint::Write);
             row += (dataLSB == Top ? 2 : -2);
         }
@@ -80,7 +80,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
         // - in columns with the ands, the buffer row gets an R if the bit is 1, otherwise the not row gets it.
         row = height - 1;
         for (int bit = 0; bit < addressBits; ++ bit) {
-            bool one = (address & (1 << bit)) != 0;
+            bool one = (address & (1ULL << bit)) != 0;
             // i *could* simplify these to logical expressions, but this is why i suck at vcb.
             bool rbuf = isnor ? (one ? false : true) : (one ? true : false);
             bool rnot = !rbuf;
