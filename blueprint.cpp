@@ -55,6 +55,7 @@ const Blueprint::Ink Blueprint::Wifi3 = QColor(255, 0, 143, 255);
 const Blueprint::Ink Blueprint::Annotation = QColor(58, 69, 81, 255);
 const Blueprint::Ink Blueprint::Filler = QColor(140, 171, 161, 255);
 const Blueprint::Ink Blueprint::Empty = QColor(0, 0, 0, 0);
+const Blueprint::Ink Blueprint::Invalid = QColor();
 
 Blueprint::Blueprint (int width, int height, QObject *parent) :
     QObject(parent)
@@ -180,9 +181,9 @@ void Blueprint::generateBlueprintString () const {
     for (Layer layer : { Logic, DecoOn, DecoOff }) {
         QImage image = layers_[layer];
         quint32 uncompressedSize = image.width() * image.height() * 4;
-        QByteArray compressedData(uncompressedSize * 2, 0);
+        QByteArray compressedData(uncompressedSize * 2 + 100, 0);
         compressedData.detach();
-        quint32 compressedSize = ZSTD_compress(compressedData.data(), compressedData.size(), image.constBits(), uncompressedSize, 22);
+        quint32 compressedSize = (quint32)ZSTD_compress(compressedData.data(), compressedData.size(), image.constBits(), uncompressedSize, 22);
         quint32 blockSize = 12 + compressedSize;
         appendInt4(blockSize);
         appendInt4((quint32)layer);

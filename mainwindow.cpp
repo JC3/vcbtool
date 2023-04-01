@@ -15,14 +15,29 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
 {
+
     ui_->setupUi(this);
     ui_->lblROMWarning->setText("");
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
+
+    QSettings s;
+    ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
+    if (s.contains("geometry"))
+        setGeometry(s.value("geometry").toRect());
+    ui_->actAlwaysOnTop->setChecked(s.value("top", false).toBool());
+
 }
 
 MainWindow::~MainWindow()
 {
+
+    QSettings s;
+    s.setValue("tab", ui_->tabWidget->currentIndex());
+    s.setValue("geometry", geometry());
+    s.setValue("top", ui_->actAlwaysOnTop->isChecked());
+
     delete ui_;
+
 }
 
 Blueprint::Layer MainWindow::selectedConversionLayer () const {
@@ -96,7 +111,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         bool bigEndian = (ui_->cbROMByteOrder->currentIndex() == 0);
         int dataBits = ui_->spnROMDataBits->value();
         int addrBits = ui_->spnROMAddrBits->value();
-        //bool reverseData = (ui_->cbROMBitOrder->currentIndex() == 0); // Circuits::ROM puts msb near address lines
+        Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
 
         const auto getWord = [&] (int offset) {
             if (offset < 0 || offset >= romdata_.size())
@@ -120,7 +135,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         for (int j = 0; j < romdata_.size(); j += wordSize)
             data.append(getWord(j));
 
-        Blueprint *bp = Circuits::ROM(addrBits, dataBits, data);
+        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, data);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
 
@@ -138,8 +153,7 @@ void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 
 void MainWindow::on_spnROMDataBits_valueChanged(int arg1)
 {
-    Q_UNUSED(arg1);
-    //ui_->cbROMBitOrder->setEnabled(arg1 > 1);
+    ui_->cbROMDataLSB->setEnabled(arg1 > 1);
 }
 
 
@@ -196,11 +210,48 @@ void MainWindow::on_txtTextContent_textChanged(const QString &)
 }
 
 
+void MainWindow::on_chkTextLogic_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_chkTextDecoOn_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_chkTextDecoOff_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_cbTextLogicInk_currentIndexChanged(int)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_clrTextDecoOn_colorChanged(const QColor &)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_clrTextDecoOff_colorChanged(const QColor &)
+{
+    doGenerateText();
+}
+
+
 void MainWindow::doGenerateText () {
     try {
 
         static const QMap<int,QString> FontFiles = {
-            { 0, "font_3x5.png" }
+            { 0, "font_3x5.png" },
+            { 1, "font_5x7.png" }
         };
 
         QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
@@ -211,8 +262,15 @@ void MainWindow::doGenerateText () {
             throw runtime_error(("couldn't load " + fontfile).toStdString());
 
         QString text = ui_->txtTextContent->text();
+        Blueprint::Ink logicInk, onInk, offInk;
+        if (ui_->chkTextLogic->isChecked())
+            logicInk = (ui_->cbTextLogicInk->currentIndex() == 0) ? Blueprint::Annotation : Blueprint::Filler;
+        if (ui_->chkTextDecoOn->isChecked())
+            onInk = ui_->clrTextDecoOn->selectedColor();
+        if (ui_->chkTextDecoOff->isChecked())
+            offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, text);
+        Blueprint *bp = Circuits::Text(fontimage, text, logicInk, onInk, offInk);
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())
@@ -224,3 +282,10 @@ void MainWindow::doGenerateText () {
         QMessageBox::critical(this, "Error", x.what());
     }
 }
+
+void MainWindow::on_actAlwaysOnTop_toggled(bool checked)
+{
+    setWindowFlag(Qt::WindowStaysOnTopHint, checked);
+    show();
+}
+

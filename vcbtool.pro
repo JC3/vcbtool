@@ -1,5 +1,5 @@
 QMAKE_TARGET_DESCRIPTION = "VCB Tool"
-VERSION = 1.3.0
+VERSION = 1.4.0
 DEFINES += VCBTOOL_VERSION='\\"$$VERSION\\"'
 
 QT       += core gui
@@ -15,6 +15,7 @@ CONFIG += c++17
 SOURCES += \
     blueprint.cpp \
     circuits.cpp \
+    colorselector.cpp \
     compiler.cpp \
     main.cpp \
     mainwindow.cpp
@@ -22,6 +23,7 @@ SOURCES += \
 HEADERS += \
     blueprint.h \
     circuits.h \
+    colorselector.h \
     compiler.h \
     mainwindow.h
 
@@ -42,4 +44,6 @@ win32:!win32-g++: PRE_TARGETDEPS +=   # zstd static lib cannot link with msvc
 else:win32-g++: PRE_TARGETDEPS += $$PWD/contrib/zstd/static/libzstd_static.lib
 
 DISTFILES += \
-    README.md
+    README.md \
+    font_3x5.png \
+    font_5x7.png

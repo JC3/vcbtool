@@ -27,6 +27,13 @@ private slots:
     void on_btnNetlistGraph_clicked();
     void on_cbTextFont_activated(int index);
     void on_txtTextContent_textChanged(const QString &arg1);
+    void on_chkTextLogic_toggled(bool checked);
+    void on_chkTextDecoOn_toggled(bool checked);
+    void on_chkTextDecoOff_toggled(bool checked);
+    void on_cbTextLogicInk_currentIndexChanged(int index);
+    void on_clrTextDecoOn_colorChanged(const QColor &);
+    void on_clrTextDecoOff_colorChanged(const QColor &);
+    void on_actAlwaysOnTop_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui_;

@@ -59,6 +59,7 @@ public:
     static const Ink Annotation;
     static const Ink Filler;
     static const Ink Empty;
+    static const Ink Invalid;
     enum Layer {
         Logic = 0,
         DecoOn = 1,
