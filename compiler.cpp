@@ -656,9 +656,15 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
     const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
         if (node->hit) {
             node->isloop = true;
-            qDebug() << "node" << node->id << Desc(node->type) << "is loop; breaking...";
+            //qDebug() << "node" << node->id << Desc(node->type) << "is loop; breaking...";
             return;
         }
+        // test early walk abort
+        if (node->mintiming >= 0 && tickmin >= node->mintiming && tickmax <= node->maxtiming) {
+            // then this particular path isn't going to affect any future min/max, so we can just abort.
+            return;
+        }
+        // end test
         node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
         node->maxtiming = std::max(node->maxtiming, tickmax);
         int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
@@ -677,9 +683,27 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
         node->isloop = false;
     }
 
+    // debug
+    {
+        int ins = 0, outs = 0, others = 0;
+        for (Node *node : graph.values()) {
+            if (node->purpose == Node::Input)
+                ++ ins;
+            else if (node->purpose == Node::Output)
+                ++ outs;
+            else
+                ++ others;
+        }
+        qDebug() << "ins" << ins << "outs" << outs << "others" << others;
+    }
+    // end debug
+
+    int progress = 0;
     for (Node *node : graph.values())
-        if (node->purpose == Node::Input)
+        if (node->purpose == Node::Input) {
+            qDebug() << (++progress);
             compute(node, 0, 0);
+        }
 
     int maxmintime = -1, maxmaxtime = -1, minmaxtime = -1;
     for (Node *node : graph.values()) {
