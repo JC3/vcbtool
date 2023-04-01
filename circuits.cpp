@@ -110,7 +110,8 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 // todo: specify layer and ink as parameters
 Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
-    constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'";
+    // ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _.:! +-*/\= "' |^& ()[]<> @~#,?%{}`¬
+    constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\xAC";
     constexpr int charsetlen = sizeof(charset) - 1;
 
     if (font.width() % charsetlen != 0)
