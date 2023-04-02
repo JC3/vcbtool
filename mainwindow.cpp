@@ -249,9 +249,16 @@ void MainWindow::on_clrTextDecoOff_colorChanged(const QColor &)
 void MainWindow::doGenerateText () {
     try {
 
+        static const QMap<int,Blueprint::Ink> LogicInks = {
+            { 0, Blueprint::Annotation },
+            { 1, Blueprint::Filler },
+            { 2, Blueprint::LED }
+        };
+
         static const QMap<int,QString> FontFiles = {
             { 0, "font_3x5.png" },
-            { 1, "font_5x7.png" }
+            { 1, "font_4x5.png" },
+            { 2, "font_5x7.png" }
         };
 
         QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
@@ -264,7 +271,7 @@ void MainWindow::doGenerateText () {
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
         if (ui_->chkTextLogic->isChecked())
-            logicInk = (ui_->cbTextLogicInk->currentIndex() == 0) ? Blueprint::Annotation : Blueprint::Filler;
+            logicInk = LogicInks[ui_->cbTextLogicInk->currentIndex()];
         if (ui_->chkTextDecoOn->isChecked())
             onInk = ui_->clrTextDecoOn->selectedColor();
         if (ui_->chkTextDecoOff->isChecked())

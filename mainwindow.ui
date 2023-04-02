@@ -484,6 +484,11 @@
               <string>Filler</string>
              </property>
             </item>
+            <item>
+             <property name="text">
+              <string>LED</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="2" column="0">
@@ -530,6 +535,11 @@
           <item>
            <property name="text">
             <string>3x5</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>4x5 (kkirss)</string>
            </property>
           </item>
           <item>
