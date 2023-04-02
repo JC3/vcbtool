@@ -49,4 +49,5 @@ DISTFILES += \
     font_3x5.png \
     font_4x5.png \
     font_5x7.png \
+    font_fixedsys12.png \
     fonts.json

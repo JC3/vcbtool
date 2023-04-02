@@ -10,5 +10,9 @@
     "5x7": {
         "file": "font_5x7.png",
         "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\u00AC"
+    },
+    "FixedSys 7x13": {
+        "file": "font_fixedsys12.png",
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz `0123456789-=~!@#$%^&*()_+[]\\{}|;':\",./<>?\u00AC"
     }
 }

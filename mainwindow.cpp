@@ -23,12 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui_->lblROMWarning->setText("");
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
 
-    QSettings s;
-    ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
-    if (s.contains("geometry"))
-        setGeometry(s.value("geometry").toRect());
-    ui_->actAlwaysOnTop->setChecked(s.value("top", false).toBool());
-
     QFile fontsJson("fonts.json");
     if (!fontsJson.open(QFile::ReadOnly | QFile::Text))
         QMessageBox::critical(this, "Error", "Error loading fonts.json: " + fontsJson.errorString());
@@ -43,6 +37,12 @@ MainWindow::MainWindow(QWidget *parent)
             ui_->cbTextFont->addItem(name);
         }
     }
+
+    QSettings s;
+    ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
+    if (s.contains("geometry"))
+        setGeometry(s.value("geometry").toRect());
+    ui_->actAlwaysOnTop->setChecked(s.value("top", false).toBool());
 
 }
 
