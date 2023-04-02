@@ -14,5 +14,10 @@
     "FixedSys 7x13": {
         "file": "font_fixedsys12.png",
         "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz `0123456789-=~!@#$%^&*()_+[]\\{}|;':\",./<>?\u00AC"
+    },
+    "Topaz 8x16": {
+        "file": "font_topaz.png",
+        "charset": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+        "kerning": -1
     }
 }
