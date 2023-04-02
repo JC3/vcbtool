@@ -107,7 +107,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 }
 
 
-Blueprint * Text (QImage font, QString fontCharset, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
+Blueprint * Text (QImage font, QString fontCharset, int kerning, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
     qDebug().noquote() << fontCharset;
 
@@ -126,7 +126,7 @@ Blueprint * Text (QImage font, QString fontCharset, QString text, Blueprint::Ink
 
     const int charwidth = font.width() / charsetlen;
     const int charheight = font.height();
-    const int bpwidth = (charwidth + 1) * str.size();
+    const int bpwidth = (charwidth + 1 + kerning) * str.size();
     const int bpheight = charheight;
 
     QVector<QPair<Blueprint::Layer,Blueprint::Ink> > layerInks;
@@ -142,7 +142,7 @@ Blueprint * Text (QImage font, QString fontCharset, QString text, Blueprint::Ink
         if (!chloc) { qDebug() << "skipping undefined character" << ch; continue; }
         const int index = chloc - charset;
         const int srcx0 = index * charwidth;
-        const int dstx0 = k * (charwidth + 1);
+        const int dstx0 = k * (charwidth + 1 + kerning);
         for (auto layerInk : layerInks) {
             const Blueprint::Layer layer = layerInk.first;
             const Blueprint::Ink ink = layerInk.second;

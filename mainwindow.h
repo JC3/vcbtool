@@ -40,6 +40,8 @@ private:
     struct FontDesc {
         QString filename;
         QString charset;
+        int kerning;
+        FontDesc () : kerning(0) { }
     };
 
     Ui::MainWindow *ui_;

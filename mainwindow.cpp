@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
             FontDesc desc;
             desc.filename = jdesc["file"].toString();
             desc.charset = jdesc["charset"].toString();
+            desc.kerning = jdesc["kerning"].toInt(0);
             fonts_[name] = desc;
             ui_->cbTextFont->addItem(name);
         }
@@ -280,6 +281,7 @@ void MainWindow::doGenerateText () {
         if (!fontimage.load(fontfile))
             throw runtime_error(("couldn't load " + fontfile).toStdString());
         QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
+        int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
 
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
@@ -290,7 +292,7 @@ void MainWindow::doGenerateText () {
         if (ui_->chkTextDecoOff->isChecked())
             offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, charset, text, logicInk, onInk, offInk);
+        Blueprint *bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())
