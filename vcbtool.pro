@@ -48,4 +48,5 @@ DISTFILES += \
     deploy.bat \
     font_3x5.png \
     font_4x5.png \
-    font_5x7.png
+    font_5x7.png \
+    fonts.json

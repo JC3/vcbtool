@@ -531,23 +531,7 @@
          </layout>
         </item>
         <item row="0" column="0">
-         <widget class="QComboBox" name="cbTextFont">
-          <item>
-           <property name="text">
-            <string>3x5</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>4x5 (kkirss)</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>5x7</string>
-           </property>
-          </item>
-         </widget>
+         <widget class="QComboBox" name="cbTextFont"/>
         </item>
         <item row="1" column="0" colspan="2">
          <widget class="QCheckBox" name="chkTextAutoCopy">
