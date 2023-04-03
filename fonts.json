@@ -1,0 +1,29 @@
+{
+    "3x5": {
+        "file": "font_3x5.png",
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\u00AC"
+    },
+    "4x5 (kkirss)": {
+        "file": "font_4x5.png",
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\u00AC"
+    },
+    "5x7": {
+        "file": "font_5x7.png",
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\u00AC"
+    },
+    "FixedSys 8x16": {
+        "file": "font_fixedsys.png",
+        "charset": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+        "kerning": -1
+    },
+    "Topaz 8x16": {
+        "file": "font_topaz.png",
+        "charset": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+        "kerning": -1
+    },
+    "Topaz Sans 8x16": {
+        "file": "font_topaz_sans.png",
+        "charset": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+        "kerning": -1
+    }
+}

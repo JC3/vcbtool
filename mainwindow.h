@@ -36,8 +36,17 @@ private slots:
     void on_actAlwaysOnTop_toggled(bool checked);
 
 private:
+
+    struct FontDesc {
+        QString filename;
+        QString charset;
+        int kerning;
+        FontDesc () : kerning(0) { }
+    };
+
     Ui::MainWindow *ui_;
     QByteArray romdata_;
+    QMap<QString,FontDesc> fonts_;
     Blueprint::Layer selectedConversionLayer () const;
     void doGenerateText ();
 };

@@ -5,6 +5,9 @@
 #include <QDebug>
 #include <QSettings>
 #include <QClipboard>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -19,6 +22,22 @@ MainWindow::MainWindow(QWidget *parent)
     ui_->setupUi(this);
     ui_->lblROMWarning->setText("");
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
+
+    QFile fontsJson("fonts.json");
+    if (!fontsJson.open(QFile::ReadOnly | QFile::Text))
+        QMessageBox::critical(this, "Error", "Error loading fonts.json: " + fontsJson.errorString());
+    else {
+        QJsonObject data = QJsonDocument::fromJson(fontsJson.readAll()).object();
+        for (QString name : data.keys()) {
+            QJsonObject jdesc = data[name].toObject();
+            FontDesc desc;
+            desc.filename = jdesc["file"].toString();
+            desc.charset = jdesc["charset"].toString();
+            desc.kerning = jdesc["kerning"].toInt(0);
+            fonts_[name] = desc;
+            ui_->cbTextFont->addItem(name);
+        }
+    }
 
     QSettings s;
     ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
@@ -249,28 +268,31 @@ void MainWindow::on_clrTextDecoOff_colorChanged(const QColor &)
 void MainWindow::doGenerateText () {
     try {
 
-        static const QMap<int,QString> FontFiles = {
-            { 0, "font_3x5.png" },
-            { 1, "font_5x7.png" }
+        static const QMap<int,Blueprint::Ink> LogicInks = {
+            { 0, Blueprint::Annotation },
+            { 1, Blueprint::Filler },
+            { 2, Blueprint::LED }
         };
 
-        QString fontfile = FontFiles[ui_->cbTextFont->currentIndex()];
+        QString fontfile = fonts_[ui_->cbTextFont->currentText()].filename;
         if (fontfile == "")
             throw runtime_error("invalid internal font id");
         QImage fontimage;
         if (!fontimage.load(fontfile))
             throw runtime_error(("couldn't load " + fontfile).toStdString());
+        QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
+        int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
 
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
         if (ui_->chkTextLogic->isChecked())
-            logicInk = (ui_->cbTextLogicInk->currentIndex() == 0) ? Blueprint::Annotation : Blueprint::Filler;
+            logicInk = LogicInks[ui_->cbTextLogicInk->currentIndex()];
         if (ui_->chkTextDecoOn->isChecked())
             onInk = ui_->clrTextDecoOn->selectedColor();
         if (ui_->chkTextDecoOff->isChecked())
             offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, text, logicInk, onInk, offInk);
+        Blueprint *bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())

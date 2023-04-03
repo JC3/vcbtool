@@ -107,22 +107,26 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 }
 
 
-// todo: specify layer and ink as parameters
-Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
+Blueprint * Text (QImage font, QString fontCharset, int kerning, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
-    constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'";
-    constexpr int charsetlen = sizeof(charset) - 1;
+    qDebug().noquote() << fontCharset;
+
+    // ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _.:! +-*/\= "' |^& ()[]<> @~#,?%{}`¬
+    //constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\xAC";
+    //constexpr int charsetlen = sizeof(charset) - 1;
+    const QByteArray charset = fontCharset.toLatin1();
+    const int charsetlen = charset.length();
 
     if (font.width() % charsetlen != 0)
         throw runtime_error("font image width does not match character set length");
 
-    const QByteArray str = text.toUpper().toLatin1();
+    const QByteArray str = (charset.contains('a') ? text.toLatin1() : text.toUpper().toLatin1());
 
     font = font.convertToFormat(QImage::Format_RGB888);
 
     const int charwidth = font.width() / charsetlen;
     const int charheight = font.height();
-    const int bpwidth = (charwidth + 1) * str.size();
+    const int bpwidth = (charwidth + 1 + kerning) * str.size();
     const int bpheight = charheight;
 
     QVector<QPair<Blueprint::Layer,Blueprint::Ink> > layerInks;
@@ -138,7 +142,7 @@ Blueprint * Text (QImage font, QString text, Blueprint::Ink logicInk, Blueprint:
         if (!chloc) { qDebug() << "skipping undefined character" << ch; continue; }
         const int index = chloc - charset;
         const int srcx0 = index * charwidth;
-        const int dstx0 = k * (charwidth + 1);
+        const int dstx0 = k * (charwidth + 1 + kerning);
         for (auto layerInk : layerInks) {
             const Blueprint::Layer layer = layerInk.first;
             const Blueprint::Ink ink = layerInk.second;

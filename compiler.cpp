@@ -458,7 +458,7 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
         QString cluster;
 
         QString label = Desc(graph.entities[id]);
-        if (settings.timinglabels)
+        if (settings.timinglabels && cgraph[id]->mintiming >= 0 && cgraph[id]->maxtiming >= 0)
             label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
         if (cgraph[id]->isloop)
             label += "*";
