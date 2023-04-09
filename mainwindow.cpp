@@ -131,6 +131,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         int dataBits = ui_->spnROMDataBits->value();
         int addrBits = ui_->spnROMAddrBits->value();
         Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
+        Circuits::ROMAddress0Side addr0Side = (Circuits::ROMAddress0Side)ui_->cbAddress0->currentIndex();
 
         const auto getWord = [&] (int offset) {
             if (offset < 0 || offset >= romdata_.size())
@@ -154,7 +155,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         for (int j = 0; j < romdata_.size(); j += wordSize)
             data.append(getWord(j));
 
-        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, data);
+        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, addr0Side, data);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
 
