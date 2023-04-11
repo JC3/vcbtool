@@ -35,6 +35,10 @@ private slots:
     void on_clrTextDecoOff_colorChanged(const QColor &);
     void on_actAlwaysOnTop_toggled(bool checked);
 
+    void on_chkROMCSV_toggled(bool checked);
+
+    void on_btnROMCSVHelp_clicked();
+
 private:
 
     struct FontDesc {
@@ -45,6 +49,7 @@ private:
     };
 
     Ui::MainWindow *ui_;
+    QString romfile_;
     QByteArray romdata_;
     QMap<QString,FontDesc> fonts_;
     Blueprint::Layer selectedConversionLayer () const;
