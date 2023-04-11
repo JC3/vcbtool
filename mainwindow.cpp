@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QTextStream>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -111,6 +112,7 @@ void MainWindow::on_btnLoadROMFile_clicked()
         QFile file(filename);
         if (!file.open(QFile::ReadOnly))
             throw runtime_error(file.errorString().toStdString());
+        romfile_ = filename;
         romdata_ = file.readAll();
         ui_->lblROMFileInfo->setText(QString("%2 (%1 bytes)").arg(romdata_.size()).arg(QFileInfo(file).fileName()));
     } catch (const std::exception &x) {
@@ -119,42 +121,126 @@ void MainWindow::on_btnLoadROMFile_clicked()
 }
 
 
+static bool readCSVRow (QTextStream &in, QStringList *row) {
+
+    static const int delta[][5] = {
+        //  ,    "   \n    ?  eof
+        {   1,   2,  -1,   0,  -1  }, // 0: parsing (store char)
+        {   1,   2,  -1,   0,  -1  }, // 1: parsing (store column)
+        {   3,   4,   3,   3,  -2  }, // 2: quote entered (no-op)
+        {   3,   4,   3,   3,  -2  }, // 3: parsing inside quotes (store char)
+        {   1,   3,  -1,   0,  -1  }, // 4: quote exited (no-op)
+        // -1: end of row, store column, success
+        // -2: eof inside quotes
+    };
+
+    row->clear();
+
+    if (in.atEnd())
+        return false;
+
+    int state = 0, t;
+    char ch;
+    QString cell;
+
+    while (state >= 0) {
+
+        if (in.atEnd())
+            t = 4;
+        else {
+            in >> ch;
+            if (ch == ',') t = 0;
+            else if (ch == '\"') t = 1;
+            else if (ch == '\n') t = 2;
+            else t = 3;
+        }
+
+        state = delta[state][t];
+
+        if (state == 0 || state == 3) {
+            cell += ch;
+        } else if (state == -1 || state == 1) {
+            row->append(cell);
+            cell = "";
+        }
+
+    }
+
+    if (state == -2)
+        throw runtime_error("End-of-file found while inside quotes.");
+
+    return true;
+
+}
+
+
 void MainWindow::on_btnROMGenerate_clicked()
 {
     try {
-
-        if (romdata_.isEmpty())
-            ui_->lblROMWarning->setText("No data file loaded, ROM will be empty.");
 
         int wordSize = ui_->spnROMWordSize->value();
         bool bigEndian = (ui_->cbROMByteOrder->currentIndex() == 0);
         int dataBits = ui_->spnROMDataBits->value();
         int addrBits = ui_->spnROMAddrBits->value();
         Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
-
-        const auto getWord = [&] (int offset) {
-            if (offset < 0 || offset >= romdata_.size())
-                return 0ULL;
-            quint64 word = 0;
-            if (bigEndian) {
-                for (int k = offset; k < offset + wordSize; ++ k) {
-                    quint8 b = (k < romdata_.size() ? romdata_[k] : 0);
-                    word = (word << 8) | b;
-                }
-            } else {
-                for (int k = offset + wordSize - 1; k >= offset; -- k) {
-                    quint8 b = (k < romdata_.size() ? romdata_[k] : 0);
-                    word = (word << 8) | b;
-                }
-            }
-            return word;
-        };
+        Circuits::ROMAddress0Side addr0Side = (Circuits::ROMAddress0Side)ui_->cbAddress0->currentIndex();
 
         QVector<quint64> data;
-        for (int j = 0; j < romdata_.size(); j += wordSize)
-            data.append(getWord(j));
 
-        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, data);
+        if (ui_->chkROMCSV->isChecked()) {
+
+            if (romfile_ == "")
+                throw runtime_error("For CSV mode, you must choose an input file.");
+
+            QFile csv(romfile_);
+            csv.open(QFile::ReadOnly | QFile::Text);
+
+            QTextStream in(&csv);
+            QStringList row;
+            while (readCSVRow(in, &row)) {
+                if (row.empty())
+                    continue;
+                int address = row[0].toInt();
+                if (address >= data.size())
+                    data.resize(address + 1, 0);
+                quint64 value = 0;
+                for (int k = 1; k < row.length(); ++ k) {
+                    int bit = (row[k].toInt() ? 1 : 0);
+                    value = (value << 1) | bit;
+                }
+                data[address] = value;
+                qDebug() << address << value;
+            }
+
+        } else {
+
+            if (romdata_.isEmpty())
+                ui_->lblROMWarning->setText("No data file loaded, ROM will be empty.");
+
+            const auto getWord = [&] (int offset) {
+                if (offset < 0 || offset >= romdata_.size())
+                    return 0ULL;
+                quint64 word = 0;
+                if (bigEndian) {
+                    for (int k = offset; k < offset + wordSize; ++ k) {
+                        quint8 b = (k < romdata_.size() ? romdata_[k] : 0);
+                        word = (word << 8) | b;
+                    }
+                } else {
+                    for (int k = offset + wordSize - 1; k >= offset; -- k) {
+                        quint8 b = (k < romdata_.size() ? romdata_[k] : 0);
+                        word = (word << 8) | b;
+                    }
+                }
+                return word;
+            };
+
+            for (int j = 0; j < romdata_.size(); j += wordSize)
+                data.append(getWord(j));
+
+        }
+
+        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, addr0Side, data);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
 
@@ -164,9 +250,16 @@ void MainWindow::on_btnROMGenerate_clicked()
 }
 
 
+void MainWindow::on_chkROMCSV_toggled(bool checked)
+{
+    ui_->cbROMByteOrder->setEnabled(ui_->spnROMWordSize->value() > 1 && !checked);
+    ui_->spnROMWordSize->setEnabled(!checked);
+}
+
+
 void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 {
-    ui_->cbROMByteOrder->setEnabled(arg1 > 1);
+    ui_->cbROMByteOrder->setEnabled(arg1 > 1 && !ui_->chkROMCSV->isChecked());
 }
 
 
@@ -309,5 +402,11 @@ void MainWindow::on_actAlwaysOnTop_toggled(bool checked)
 {
     setWindowFlag(Qt::WindowStaysOnTopHint, checked);
     show();
+}
+
+
+void MainWindow::on_btnROMCSVHelp_clicked()
+{
+    QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based decimal address of the entry. Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
 }
 

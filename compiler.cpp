@@ -429,13 +429,11 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
     SimpleGraph graph = settings.compressed ? compressedConnections() : sgraph_;
 
-    QStringList dot;
+    QStringList dot; // yeah i know it's not necessarily dot
     dot.append("digraph {");
 
-    /*for (int id : graph.entities.keys()) {
-        QString label = Desc(graph.entities[id]);
-        dot.append(QString("  %1[label=\"%2\"];").arg(id).arg(label));
-    }*/
+    if (settings.positions != GraphSettings::None)
+        dot.append("  layout=\"neato\";");
 
     ComplexGraph cgraph = buildComplexGraph(graph);
 

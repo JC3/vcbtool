@@ -6,7 +6,7 @@ using std::runtime_error;
 
 namespace Circuits {
 
-Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QVector<quint64> &data) {
+Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddress0Side addr0Side, const QVector<quint64> &data) {
 
     const Blueprint::Ink trace = Blueprint::Trace1;
 
@@ -25,7 +25,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
     for (int a = 0; a < addressBits; ++ a) {
         if (a == 0) {
             bp->set(0, row, Blueprint::Read);
-            bp->set(1, row, Blueprint::Buffer);
+            bp->set(1, row, addr0Side == Far ? Blueprint::Buffer : Blueprint::Not);
             bp->set(2, row, Blueprint::Write);
             row -= 1;
         } else {
@@ -62,8 +62,8 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
 
     // address and data bits
     // to do: truncate if data vector smaller than address space
-    col = width - 2;
-    bool isnor = true;
+    col = (addr0Side == Far ? (width - 2) : (width - 2 * addresses) );
+    bool isnor = (addr0Side == Far);
     for (quint64 address = 0; address < addresses; ++ address) {
 
         // ---- data bits
@@ -86,8 +86,8 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
             bool rnot = !rbuf;
             // there is no not row for the first bit
             if (bit == 0) {
-                assert(rbuf);
-                if (rbuf) bp->set(col, row, Blueprint::Read);
+                /*assert(rbuf);
+                 * if (rbuf)*/ bp->set(col, row, Blueprint::Read);
                 row -= 2;
             } else {
                 if (rbuf) bp->set(col, row, Blueprint::Read);
@@ -98,7 +98,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, const QV
         isnor = !isnor;
 
         // ---- advance
-        col -= 2;
+        col += (addr0Side == Far ? -2 : 2);
 
     }
 
