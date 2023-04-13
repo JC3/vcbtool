@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui_->setupUi(this);
     ui_->lblROMWarning->setText("");
+    on_chkROMCSV_toggled(ui_->chkROMCSV->isChecked());
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
 
     QFile fontsJson("fonts.json");
@@ -184,6 +185,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         int addrBits = ui_->spnROMAddrBits->value();
         Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
         Circuits::ROMAddress0Side addr0Side = (Circuits::ROMAddress0Side)ui_->cbAddress0->currentIndex();
+        int skipRows = ui_->spnROMSkipRows->value();
 
         QVector<quint64> data;
 
@@ -198,6 +200,8 @@ void MainWindow::on_btnROMGenerate_clicked()
             QTextStream in(&csv);
             QStringList row;
             while (readCSVRow(in, &row)) {
+                if (skipRows-- > 0)
+                    continue;
                 if (row.empty())
                     continue;
                 int address = row[0].toInt();
@@ -254,6 +258,7 @@ void MainWindow::on_chkROMCSV_toggled(bool checked)
 {
     ui_->cbROMByteOrder->setEnabled(ui_->spnROMWordSize->value() > 1 && !checked);
     ui_->spnROMWordSize->setEnabled(!checked);
+    ui_->spnROMSkipRows->setEnabled(checked);
 }
 
 
