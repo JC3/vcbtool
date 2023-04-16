@@ -39,6 +39,10 @@ private slots:
 
     void on_btnROMCSVHelp_clicked();
 
+    void on_btnMiscGray8_clicked();
+
+    void on_btnMiscRGB332_clicked();
+
 private:
 
     struct FontDesc {

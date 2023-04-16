@@ -415,3 +415,28 @@ void MainWindow::on_btnROMCSVHelp_clicked()
     QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based decimal address of the entry. Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
 }
 
+
+void MainWindow::on_btnMiscGray8_clicked()
+{
+    QStringList colors;
+    for (int g = 0; g <= 255; ++ g)
+        colors.append(QString::asprintf("%02x%02x%02x", g, g, g));
+    ui_->txtMisc->setPlainText(colors.join(", "));
+}
+
+
+void MainWindow::on_btnMiscRGB332_clicked()
+{
+    static const auto rescale = [] (int v, int oldmax, int newmax) {
+        return qRound((float)newmax * (float)v / (float)oldmax);
+    };
+    QStringList colors;
+    for (int k = 0; k <= 255; ++ k) {
+        int r = rescale((k >> 5) & 7, 7, 255);
+        int g = rescale((k >> 2) & 7, 7, 255);
+        int b = rescale((k >> 0) & 3, 3, 255);
+        colors.append(QString::asprintf("%02x%02x%02x", r, g, b));
+    }
+    ui_->txtMisc->setPlainText(colors.join(", "));
+}
+
