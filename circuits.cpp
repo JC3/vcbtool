@@ -6,15 +6,18 @@ using std::runtime_error;
 
 namespace Circuits {
 
-Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddress0Side addr0Side, const QVector<quint64> &data) {
+Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddress0Side addr0Side, const QVector<quint64> &data, bool omitEmpty) {
 
-    const Blueprint::Ink trace = Blueprint::Trace1;
+    const Blueprint::Ink trace = Blueprint::Trace5;
+
+    if (omitEmpty && addr0Side == Far)
+        throw runtime_error("Empty columns can only be omitted if address 0 is set to input side. Sorry.");
 
     // things will go nuts if bit counts are too high but for now just let
     // things go nuts. maybe overflow checking some day.
     quint64 addresses = 1ULL << addressBits;
     int width = 3 + 2 * addresses + 1;
-    int height = 1 + 4 * (addressBits - 1) + 2 * dataBits;
+    int height = (omitEmpty ? 3 : 1) + 4 * (addressBits - 1) + 2 * dataBits;
     qDebug() << "rom will be" << width << "x" << height;
 
     Blueprint *bp = new Blueprint(width, height);
@@ -24,10 +27,20 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
     row = height - 1;
     for (int a = 0; a < addressBits; ++ a) {
         if (a == 0) {
-            bp->set(0, row, Blueprint::Read);
-            bp->set(1, row, addr0Side == Far ? Blueprint::Buffer : Blueprint::Not);
-            bp->set(2, row, Blueprint::Write);
-            row -= 1;
+            if (omitEmpty) {
+                bp->set(1, row-2, Blueprint::Not);
+                bp->set(2, row-2, Blueprint::Write);
+                bp->set(0, row-1, trace);
+                bp->set(1, row-1, Blueprint::Read);
+                bp->set(1, row, Blueprint::Buffer);
+                bp->set(2, row, Blueprint::Write);
+                row -= 3;
+            } else {
+                bp->set(0, row, Blueprint::Read);
+                bp->set(1, row, addr0Side == Far ? Blueprint::Buffer : Blueprint::Not);
+                bp->set(2, row, Blueprint::Write);
+                row -= 1;
+            }
         } else {
             bp->set(1, row-3, Blueprint::Not);
             bp->set(2, row-3, Blueprint::Write);
@@ -56,9 +69,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
         }
     }
 
-    // outputs
-    for (int bit = 0; bit < dataBits; ++ bit)
-        bp->set(width - 1, bit * 2, trace);
+    int lastColumn = 0;
 
     // address and data bits
     // to do: truncate if data vector smaller than address space
@@ -66,8 +77,11 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
     bool isnor = (addr0Side == Far);
     for (quint64 address = 0; address < addresses; ++ address) {
 
-        // ---- data bits
         quint64 curdata = data.value(address);
+        if (omitEmpty && curdata == 0)
+            continue;
+
+        // ---- data bits
         row = (dataLSB == Top ? 0 : (2 * (dataBits - 1)));
         for (int bit = 0; bit < dataBits; ++ bit) {
             if (curdata & (1ULL << bit))
@@ -84,10 +98,10 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
             // i *could* simplify these to logical expressions, but this is why i suck at vcb.
             bool rbuf = isnor ? (one ? false : true) : (one ? true : false);
             bool rnot = !rbuf;
-            // there is no not row for the first bit
-            if (bit == 0) {
+            // there is no not row for the first bit when !omitEmpty
+            if (bit == 0 && !omitEmpty) {
                 /*assert(rbuf);
-                 * if (rbuf)*/ bp->set(col, row, Blueprint::Read);
+                if (rbuf)*/ bp->set(col, row, Blueprint::Read);
                 row -= 2;
             } else {
                 if (rbuf) bp->set(col, row, Blueprint::Read);
@@ -98,9 +112,23 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
         isnor = !isnor;
 
         // ---- advance
+        if (col > lastColumn) lastColumn = col;
         col += (addr0Side == Far ? -2 : 2);
 
     }
+
+    // remove extra columns if requested
+    if (omitEmpty) {
+        assert(addr0Side == Near);
+        for (int col = lastColumn + 1; col < width; ++ col)
+            for (int row = 0; row < height; ++ row) {
+                bp->set(col, row, Blueprint::Empty);
+            }
+    }
+
+    // outputs
+    for (int bit = 0; bit < dataBits; ++ bit)
+        bp->set(lastColumn + 1, bit * 2, trace);
 
     return bp;
 

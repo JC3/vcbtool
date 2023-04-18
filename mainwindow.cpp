@@ -186,6 +186,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         Circuits::ROMDataLSBSide dataLSB = (Circuits::ROMDataLSBSide)ui_->cbROMDataLSB->currentIndex();
         Circuits::ROMAddress0Side addr0Side = (Circuits::ROMAddress0Side)ui_->cbAddress0->currentIndex();
         int skipRows = ui_->spnROMSkipRows->value();
+        bool omitEmpty = ui_->chkROMOmit->isChecked();
 
         QVector<quint64> data;
 
@@ -244,7 +245,7 @@ void MainWindow::on_btnROMGenerate_clicked()
 
         }
 
-        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, addr0Side, data);
+        Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, addr0Side, data, omitEmpty);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
 
@@ -271,6 +272,12 @@ void MainWindow::on_spnROMWordSize_valueChanged(int arg1)
 void MainWindow::on_spnROMDataBits_valueChanged(int arg1)
 {
     ui_->cbROMDataLSB->setEnabled(arg1 > 1);
+}
+
+
+void MainWindow::on_cbAddress0_activated(int index)
+{
+    ui_->chkROMOmit->setEnabled(index == (int)Circuits::Near);
 }
 
 
