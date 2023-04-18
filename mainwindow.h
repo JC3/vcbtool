@@ -45,6 +45,8 @@ private slots:
 
     void on_cbAddress0_activated(int index);
 
+    void on_btnMiscX11_clicked();
+
 private:
 
     struct FontDesc {

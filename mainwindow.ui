@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>709</width>
-    <height>449</height>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -871,6 +871,13 @@
            <widget class="QPushButton" name="btnMiscRGB332">
             <property name="text">
              <string>RGB332 Palette</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnMiscX11">
+            <property name="text">
+             <string>X11 Palette</string>
             </property>
            </widget>
           </item>
