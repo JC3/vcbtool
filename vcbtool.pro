@@ -1,5 +1,5 @@
 QMAKE_TARGET_DESCRIPTION = "VCB Tool"
-VERSION = 1.5.0
+VERSION = 1.7.0
 DEFINES += VCBTOOL_VERSION='\\"$$VERSION\\"'
 
 QT       += core gui
@@ -46,8 +46,12 @@ else:win32-g++: PRE_TARGETDEPS += $$PWD/contrib/zstd/static/libzstd_static.lib
 DISTFILES += \
     README.md \
     deploy.bat \
+    font_3x4.png \
     font_3x5.png \
     font_4x5.png \
     font_5x7.png \
+    font_fixedsys.png \
     font_fixedsys12.png \
+    font_topaz.png \
+    font_topaz_sans.png \
     fonts.json

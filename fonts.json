@@ -1,4 +1,8 @@
 {
+    "3x4 (Boolean)": {
+        "file": "font_3x4.png",
+        "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.!?()[],:+-*/\\=^'\"|\u00AC "
+    },
     "3x5": {
         "file": "font_3x5.png",
         "charset": "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\u00AC"

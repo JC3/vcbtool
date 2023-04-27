@@ -624,6 +624,39 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 }
 
 
+QStringList Compiler::analyzeBlueprint (const AnalysisSettings &settings, const Blueprint *blueprint) {
+
+    QStringList results;
+
+    const auto print = [&] (int x, int y, QString message) {
+        qDebug() << "bp analysis:" << x << y << message;
+        results.append(QString("%1, %2: %3").arg(x).arg(y).arg(message));
+    };
+
+    if (settings.checkCrosses) {
+        // super hacky, screw performance
+        for (int y = 0; y < blueprint->height(); ++ y) {
+            for (int x = 0; x < blueprint->width(); ++ x) {
+                try {
+                    Component c = Comp(blueprint->get(x, y));
+                    if (IsEmpty(c) || IsCross(c)) continue;
+                    const auto sameas = [&](int px, int py) { Component o = Comp(blueprint->get(px, py)); return Same(c, o); };
+                    if (sameas(x,y-1) && sameas(x,y+1) &&
+                        sameas(x-1,y) && sameas(x+1,y) &&
+                        !sameas(x-1,y-1) && !sameas(x+1,y-1) && !sameas(x-1,y+1) && !sameas(x+1,y+1))
+                    {
+                        print(x, y, "potentially missing cross");
+                    }
+                } catch (...) { /* out of range coords; skip */ }
+            }
+        }
+    }
+
+    return results;
+
+}
+
+
 Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
 
     ComplexGraph nodes;

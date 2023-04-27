@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>709</width>
-    <height>445</height>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -150,59 +150,10 @@
         </item>
         <item row="2" column="0">
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_10">
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_4">
             <property name="text">
-             <string>Address 0:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QSpinBox" name="spnROMDataBits">
-            <property name="suffix">
-             <string> bit</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>64</number>
-            </property>
-            <property name="value">
-             <number>32</number>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="cbROMByteOrder">
-            <property name="currentIndex">
-             <number>1</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>Big-endian</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Little-endian</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QSpinBox" name="spnROMAddrBits">
-            <property name="suffix">
-             <string> bit</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>32</number>
-            </property>
-            <property name="value">
-             <number>4</number>
+             <string>Byte order:</string>
             </property>
            </widget>
           </item>
@@ -220,68 +171,10 @@
             </item>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QLabel" name="label_9">
-            <property name="text">
-             <string>Data LSB:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Word size:</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_5">
             <property name="text">
              <string>Address bits:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="1">
-           <widget class="QComboBox" name="cbAddress0">
-            <item>
-             <property name="text">
-              <string>Input Side</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Far Side</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Byte order:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="text">
-             <string>Data bits:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QSpinBox" name="spnROMWordSize">
-            <property name="suffix">
-             <string> byte</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>8</number>
-            </property>
-            <property name="value">
-             <number>4</number>
             </property>
            </widget>
           </item>
@@ -314,6 +207,130 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="cbROMByteOrder">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Big-endian</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Little-endian</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="cbAddress0">
+            <item>
+             <property name="text">
+              <string>Input Side</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Far Side</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Data LSB:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Address 0:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="spnROMWordSize">
+            <property name="suffix">
+             <string> byte</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>8</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="spnROMAddrBits">
+            <property name="suffix">
+             <string> bit</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>32</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Skip rows:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Word size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Data bits:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QSpinBox" name="spnROMDataBits">
+            <property name="suffix">
+             <string> bit</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>64</number>
+            </property>
+            <property name="value">
+             <number>32</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="spnROMSkipRows"/>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QCheckBox" name="chkROMOmit">
+            <property name="text">
+             <string>Omit empty entries</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -679,6 +696,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkMissingCrosses">
+            <property name="text">
+             <string>Missing Crosses</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -833,6 +860,54 @@
            <string>Blueprint string</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabMisc">
+       <attribute name="title">
+        <string>Misc.</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QPushButton" name="btnMiscGray8">
+            <property name="text">
+             <string>Gray8 Palette</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnMiscRGB332">
+            <property name="text">
+             <string>RGB332 Palette</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnMiscX11">
+            <property name="text">
+             <string>X11 Palette</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_6">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPlainTextEdit" name="txtMisc"/>
         </item>
        </layout>
       </widget>
