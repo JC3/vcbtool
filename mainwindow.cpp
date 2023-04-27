@@ -25,11 +25,13 @@ MainWindow::MainWindow(QWidget *parent)
     on_chkROMCSV_toggled(ui_->chkROMCSV->isChecked());
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
 
+    int defFontIndex = 0;
     QFile fontsJson("fonts.json");
     if (!fontsJson.open(QFile::ReadOnly | QFile::Text))
         QMessageBox::critical(this, "Error", "Error loading fonts.json: " + fontsJson.errorString());
     else {
         QJsonObject data = QJsonDocument::fromJson(fontsJson.readAll()).object();
+        int index = 0;
         for (QString name : data.keys()) {
             QJsonObject jdesc = data[name].toObject();
             FontDesc desc;
@@ -38,8 +40,11 @@ MainWindow::MainWindow(QWidget *parent)
             desc.kerning = jdesc["kerning"].toInt(0);
             fonts_[name] = desc;
             ui_->cbTextFont->addItem(name);
+            if (name == "3x5") defFontIndex = index;
+            ++ index;
         }
     }
+    ui_->cbTextFont->setCurrentIndex(defFontIndex);
 
     QSettings s;
     ui_->tabWidget->setCurrentIndex(s.value("tab", 0).toInt());
