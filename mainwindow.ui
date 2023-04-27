@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>4</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -692,6 +692,16 @@
            <widget class="QCheckBox" name="chk2InputGates">
             <property name="text">
              <string>&lt;2-Input Gates</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkMissingCrosses">
+            <property name="text">
+             <string>Missing Crosses</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

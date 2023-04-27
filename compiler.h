@@ -132,10 +132,12 @@ public:
     struct AnalysisSettings {
         bool checkTraces;
         bool checkGates;
-        AnalysisSettings () : checkTraces(true), checkGates(true) { }
+        bool checkCrosses;
+        AnalysisSettings () : checkTraces(true), checkGates(true), checkCrosses(true) { }
     };
 
     QStringList analyzeCircuit (const AnalysisSettings &settings) const;
+    static QStringList analyzeBlueprint (const AnalysisSettings &settings, const Blueprint *blueprint);
 
 private:
 

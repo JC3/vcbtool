@@ -289,8 +289,10 @@ void MainWindow::on_btnNetlistCheck_clicked()
         Compiler::AnalysisSettings s;
         s.checkTraces = ui_->chkUnconnectedTraces->isChecked();
         s.checkGates = ui_->chk2InputGates->isChecked();
+        s.checkCrosses = ui_->chkMissingCrosses->isChecked();
         //ui_->txtNetlistOut->setPlainText(c.analyzeCircuit(s).join("\n"));
         QStringList messages = c.analyzeCircuit(s);
+        messages += Compiler::analyzeBlueprint(s, &bp);
         QString indexed;
         for (int k = 0; k < messages.size(); ++ k)
             indexed += QString::asprintf("%3d) %s\n", k + 1, messages[k].toLatin1().constData());
