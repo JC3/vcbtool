@@ -1,5 +1,6 @@
 cd vcbtool-win64
 cp ..\release\vcbtool.exe .
+cp ..\font_3x4.png .
 cp ..\font_3x5.png .
 cp ..\font_4x5.png .
 cp ..\font_5x7.png .
