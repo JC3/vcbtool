@@ -47,6 +47,8 @@ private slots:
 
     void on_btnMiscX11_clicked();
 
+    void on_btnConvertEmoji_clicked();
+
 private:
 
     struct FontDesc {

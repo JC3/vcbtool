@@ -76,10 +76,25 @@ public:
     int height () const { return layers_.first().height(); }
     Ink getPixel (Layer which, int x, int y) const;
     Ink get (int x, int y) const { return getPixel(Logic, x, y); }
+    // utilities
+    QString toDiscordEmoji () const;
 private:
     mutable QString bpString_;
     QMap<Layer,QImage> layers_;
     void generateBlueprintString () const;
 };
+
+inline bool operator < (const Blueprint::Ink &a, const Blueprint::Ink &b) {
+    if (a.red() != b.red())
+        return a.red() < b.red();
+    else if (a.green() != b.green())
+        return a.green() < b.green();
+    else if (a.blue() != b.blue())
+        return a.blue() < b.blue();
+    else if (a.alpha() != b.alpha())
+        return a.alpha() < b.alpha();
+    else
+        return false;
+}
 
 #endif // BLUEPRINT_H
