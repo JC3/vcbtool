@@ -57,7 +57,7 @@ ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) 
 
     quint64 addr = 0;
     for (auto k = 0; k < romdata.size(); k += options.wordSize, ++ addr)
-        rom->data[makeAddress(k, options.addressBits)] = makeData(getWord(k));
+        rom->data[makeAddress(addr, options.addressBits)] = makeData(getWord(k));
 
     return rom.release();
 
