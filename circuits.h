@@ -2,6 +2,7 @@
 #define CIRCUITS_H
 
 #include "blueprint.h"
+#include <QFileInfo>
 #include <QVector>
 
 namespace Circuits {
@@ -13,6 +14,9 @@ struct ROMData {
     using Address = QVector<AddressBit>; // msb first
     using Data = QVector<DataBit>;
 
+    static Address makeAddress (quint64 number, int bits);
+
+    QFileInfo sourceFile;
     int addressBits;
     int dataBits;
     QMap<Address,Data> data;
@@ -24,18 +28,16 @@ struct ROMData {
         bool bigEndian;
         int addressBits;
         int dataBits;
-        bool omitEmpty;
-        RawOptions () : wordSize(4), bigEndian(false), addressBits(0), dataBits(0), omitEmpty(false) { }
+        RawOptions () : wordSize(4), bigEndian(false), addressBits(0), dataBits(0) { }
     };
 
     static ROMData * fromRaw (const QString &filename, const RawOptions &options);
 
     struct CSVOptions {
         int skipRows;
-        bool omitEmpty;
         int addressBits; // -1 = auto
         int dataBits; // -1 = auto
-        CSVOptions () : skipRows(0), omitEmpty(true), addressBits(-1), dataBits(-1) { }
+        CSVOptions () : skipRows(0), addressBits(-1), dataBits(-1) { }
     };
 
     static ROMData * fromCSV (const QString &filename, const CSVOptions &options);

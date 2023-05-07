@@ -1,14 +1,65 @@
 #include "circuits.h"
 #include <QDebug>
+#include <QFile>
 #include <stdexcept>
 
 using std::runtime_error;
 
 namespace Circuits {
 
+ROMData::Address ROMData::makeAddress (quint64 number, int bits) {
+
+    ROMData::Address addr;
+    for (int bit = bits - 1; bit >= 0; -- bit)
+        addr.append((number & (1 << bit)) ? ROMData::On : ROMData::Off);
+    return addr;
+
+}
+
 ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) {
 
-    return nullptr;
+    std::unique_ptr<ROMData> rom = std::make_unique<ROMData>();
+    rom->sourceFile = QFileInfo(filename);
+    rom->addressBits = options.addressBits;
+    rom->dataBits = options.dataBits;
+
+    QFile file;
+    if (!file.open(QFile::ReadOnly))
+        throw runtime_error(file.errorString().toStdString());
+
+    QByteArray romdata = file.readAll();
+
+    const auto getWord = [&] (int offset) {
+        if (offset < 0 || offset >= romdata.size())
+            return 0ULL;
+        quint64 word = 0;
+        if (options.bigEndian) {
+            for (int k = offset; k < offset + options.wordSize; ++ k) {
+                quint8 b = (k < romdata.size() ? romdata[k] : 0);
+                word = (word << 8) | b;
+            }
+        } else {
+            for (int k = offset + options.wordSize - 1; k >= offset; -- k) {
+                quint8 b = (k < romdata.size() ? romdata[k] : 0);
+                word = (word << 8) | b;
+            }
+        }
+        return word;
+    };
+
+    // makes data msb first
+    const auto makeData = [&] (quint64 number) {
+        ROMData::Data data;
+        for (int bit = options.dataBits - 1; bit >= 0; -- bit)
+             data.append(number & (1 << bit));
+        return data;
+    };
+
+    quint64 addr = 0;
+    for (auto k = 0; k < romdata.size(); k += options.wordSize, ++ addr)
+        rom->data[makeAddress(k, options.addressBits)] = makeData(getWord(k));
+
+    return rom.release();
 
 }
 
