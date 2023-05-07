@@ -2,8 +2,45 @@
 #define CIRCUITS_H
 
 #include "blueprint.h"
+#include <QVector>
 
 namespace Circuits {
+
+struct ROMData {
+
+    enum AddressBit { Off, On, DontCare };
+    using DataBit = bool;
+    using Address = QVector<AddressBit>; // msb first
+    using Data = QVector<DataBit>;
+
+    int addressBits;
+    int dataBits;
+    QMap<Address,Data> data;
+
+    ROMData () : addressBits(0), dataBits(0) { }
+
+    struct RawOptions {
+        int wordSize;
+        bool bigEndian;
+        int addressBits;
+        int dataBits;
+        bool omitEmpty;
+        RawOptions () : wordSize(4), bigEndian(false), addressBits(0), dataBits(0), omitEmpty(false) { }
+    };
+
+    static ROMData * fromRaw (const QString &filename, const RawOptions &options);
+
+    struct CSVOptions {
+        int skipRows;
+        bool omitEmpty;
+        int addressBits; // -1 = auto
+        int dataBits; // -1 = auto
+        CSVOptions () : skipRows(0), omitEmpty(true), addressBits(-1), dataBits(-1) { }
+    };
+
+    static ROMData * fromCSV (const QString &filename, const CSVOptions &options);
+
+};
 
 enum ROMDataLSBSide { Bottom=0, Top=1 };
 enum ROMAddress0Side { Near=0, Far=1 };

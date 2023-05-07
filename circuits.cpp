@@ -6,6 +6,18 @@ using std::runtime_error;
 
 namespace Circuits {
 
+ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) {
+
+    return nullptr;
+
+}
+
+ROMData * ROMData::fromCSV (const QString &filename, const CSVOptions &options) {
+
+    return nullptr;
+
+}
+
 Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddress0Side addr0Side, const QVector<quint64> &data, bool omitEmpty) {
 
     const Blueprint::Ink trace = Blueprint::Trace5;
