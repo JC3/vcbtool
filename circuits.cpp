@@ -23,7 +23,7 @@ ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) 
     rom->addressBits = options.addressBits;
     rom->dataBits = options.dataBits;
 
-    QFile file;
+    QFile file(filename);
     if (!file.open(QFile::ReadOnly))
         throw runtime_error(file.errorString().toStdString());
 
@@ -66,6 +66,16 @@ ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) 
 ROMData * ROMData::fromCSV (const QString &filename, const CSVOptions &options) {
 
     return nullptr;
+
+}
+
+Blueprint * ROM (const ROMData *data, ROMDataLSBSide dataLSB, ROMAddress0Side addr0Side, bool omitEmpty) {
+
+    std::unique_ptr<Blueprint> bp;
+
+    throw runtime_error("Unimplemented.");
+
+    return bp.release();
 
 }
 

@@ -139,6 +139,7 @@ void MainWindow::on_btnLoadROMFile_clicked()
 }
 
 
+#if 0
 static bool readCSVRow (QTextStream &in, QStringList *row) {
 
     static const int delta[][5] = {
@@ -190,6 +191,7 @@ static bool readCSVRow (QTextStream &in, QStringList *row) {
     return true;
 
 }
+#endif
 
 
 void MainWindow::on_btnROMGenerate_clicked()
@@ -205,6 +207,29 @@ void MainWindow::on_btnROMGenerate_clicked()
         int skipRows = ui_->spnROMSkipRows->value();
         bool omitEmpty = ui_->chkROMOmit->isChecked();
 
+        std::unique_ptr<Circuits::ROMData> rom;
+        if (ui_->chkROMCSV->isChecked()) {
+            if (romfile_ == "")
+                throw runtime_error("For CSV mode, you must choose an input file.");
+            Circuits::ROMData::CSVOptions options;
+            options.addressBits = addrBits;
+            options.dataBits = dataBits;
+            options.skipRows = skipRows;
+            rom.reset(Circuits::ROMData::fromCSV(romfile_, options));
+        } else if (romfile_ != "") {
+            Circuits::ROMData::RawOptions options;
+            options.addressBits = addrBits;
+            options.dataBits = dataBits;
+            options.wordSize = wordSize;
+            options.bigEndian = bigEndian;
+            rom.reset(Circuits::ROMData::fromRaw(romfile_, options));
+        }
+
+        Blueprint *bp = Circuits::ROM(rom.get(), dataLSB, addr0Side, omitEmpty);
+        ui_->txtROMBP->setPlainText(bp->bpString());
+        delete bp;
+
+        /*
         QVector<quint64> data;
 
         if (ui_->chkROMCSV->isChecked()) {
@@ -265,6 +290,7 @@ void MainWindow::on_btnROMGenerate_clicked()
         Blueprint *bp = Circuits::ROM(addrBits, dataBits, dataLSB, addr0Side, data, omitEmpty);
         ui_->txtROMBP->setPlainText(bp->bpString());
         delete bp;
+        */
 
     } catch (const std::exception &x) {
         QMessageBox::critical(this, "Error", x.what());
