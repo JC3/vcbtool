@@ -286,19 +286,6 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
 
 }
 
-static bool operator < (const QColor &a, const QColor &b) {
-    if (a.red() != b.red())
-        return a.red() < b.red();
-    else if (a.green() != b.green())
-        return a.green() < b.green();
-    else if (a.blue() != b.blue())
-        return a.blue() < b.blue();
-    else if (a.alpha() != b.alpha())
-        return a.alpha() < b.alpha();
-    else
-        return false;
-}
-
 Compiler::Component Compiler::Comp (Blueprint::Ink ink) {
 
     static const QMap<Blueprint::Ink,Component> m = {

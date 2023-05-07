@@ -199,3 +199,56 @@ void Blueprint::generateBlueprintString () const {
     bpString_ = "VCB+AAAA" + QString::fromLatin1(hashBase64) + QString::fromLatin1(rawBase64);
 
 }
+
+
+QString Blueprint::toDiscordEmoji () const {
+
+    static const QMap<Ink,QString> EmojiMap = {
+        { And, "and" },
+        { Annotation, "ann" },
+        { Buffer, "bfr" },
+        { Cross, "crs" },
+        { Filler, "fil" },
+        { LED, "led" },
+        { LatchOff, "lt0" },
+        { LatchOn, "lt1" },
+        { Nand, "nan" },
+        { Nor, "nor" },
+        { Not, "not" },
+        { Or, "or" },
+        { Read, "rd" },
+        { Write, "wr" },
+        { Xnor, "xnr" },
+        { Xor, "xor" },
+        { Trace1, "t00" },
+        { Trace2, "t01" },
+        { Trace3, "t02" },
+        { Trace4, "t03" },
+        { Trace5, "t04" },
+        { Trace6, "t05" },
+        { Trace7, "t06" },
+        { Trace8, "t07" },
+        { Trace9, "t08" },
+        { Trace10, "t09" },
+        { Trace11, "t10" },
+        { Trace12, "t11" },
+        { Trace13, "t12" },
+        { Trace14, "t13" },
+        { Trace15, "t14" },
+        { Trace16, "t15" },
+        { Empty, "pd" }
+    };
+
+    QString emojistr = ":pd:\n";
+    for (int y = 0; y < height(); ++ y) {
+        for (int x = 0; x < width(); ++ x) {
+            Ink ink = get(x, y);
+            emojistr += ":" + EmojiMap.value(ink, "vcb") + ":";
+        }
+        emojistr += "\n";
+    }
+
+    return emojistr;
+
+}
+

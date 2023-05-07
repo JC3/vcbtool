@@ -110,6 +110,18 @@ void MainWindow::on_btnConvertBP_clicked()
 }
 
 
+void MainWindow::on_btnConvertEmoji_clicked()
+{
+    try {
+        Blueprint bp(ui_->txtConvertedBP->toPlainText());
+        QString emoji = bp.toDiscordEmoji();
+        QGuiApplication::clipboard()->setText(emoji);
+    } catch (const std::exception &x) {
+        QMessageBox::critical(this, "Error", x.what());
+    }
+}
+
+
 void MainWindow::on_btnLoadROMFile_clicked()
 {
     try {

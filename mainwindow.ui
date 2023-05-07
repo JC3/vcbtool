@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -45,6 +45,13 @@
            <widget class="QPushButton" name="btnConvertBP">
             <property name="text">
              <string>Save As Image...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnConvertEmoji">
+            <property name="text">
+             <string>Copy As Discord Emoji</string>
             </property>
            </widget>
           </item>
