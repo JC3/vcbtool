@@ -63,9 +63,110 @@ ROMData * ROMData::fromRaw (const QString &filename, const RawOptions &options) 
 
 }
 
-ROMData * ROMData::fromCSV (const QString &filename, const CSVOptions &options) {
+static bool readCSVRow (QTextStream &in, QStringList *row) {
 
-    return nullptr;
+    static const int delta[][5] = {
+        //  ,    "   \n    ?  eof
+        {   1,   2,  -1,   0,  -1  }, // 0: parsing (store char)
+        {   1,   2,  -1,   0,  -1  }, // 1: parsing (store column)
+        {   3,   4,   3,   3,  -2  }, // 2: quote entered (no-op)
+        {   3,   4,   3,   3,  -2  }, // 3: parsing inside quotes (store char)
+        {   1,   3,  -1,   0,  -1  }, // 4: quote exited (no-op)
+        // -1: end of row, store column, success
+        // -2: eof inside quotes
+    };
+
+    row->clear();
+
+    if (in.atEnd())
+        return false;
+
+    int state = 0, t;
+    char ch;
+    QString cell;
+
+    while (state >= 0) {
+
+        if (in.atEnd())
+            t = 4;
+        else {
+            in >> ch;
+            if (ch == ',') t = 0;
+            else if (ch == '\"') t = 1;
+            else if (ch == '\n') t = 2;
+            else t = 3;
+        }
+
+        state = delta[state][t];
+
+        if (state == 0 || state == 3) {
+            cell += ch;
+        } else if (state == -1 || state == 1) {
+            row->append(cell);
+            cell = "";
+        }
+
+    }
+
+    if (state == -2)
+        throw runtime_error("End-of-file found while inside quotes.");
+
+    return true;
+
+}
+
+ROMData * ROMData::fromCSV (const QString &filename, const CSVOptions &options) {
+    // note: auto address bit size not actually supported
+
+    const auto makeAddress = [&] (QString str) {
+        str = str.trimmed().toLower();
+        if (str.startsWith("0x")) {
+            return ROMData::makeAddress(str.mid(2).toInt(nullptr, 16), options.addressBits);
+        } else if (str.startsWith("0b")) {
+            ROMData::Address addr;
+            str = str.mid(2);
+            for (char c : str.toLatin1()) {
+                if (c == '0') addr.append(ROMData::Off);
+                else if (c == '1') addr.append(ROMData::On);
+                else if (c == 'x') addr.append(ROMData::DontCare);
+                else throw runtime_error("One of the binary addresses has an invalid character in it (only can accept 0, 1, or x).");
+            }
+            return addr;
+        } else {
+            return ROMData::makeAddress(str.toInt(), options.addressBits);
+        }
+    };
+
+    std::unique_ptr<ROMData> rom = std::make_unique<ROMData>();
+    rom->sourceFile = QFileInfo(filename);
+    rom->addressBits = options.addressBits;
+    rom->dataBits = options.dataBits;
+
+    QFile csv(filename);
+    if (!csv.open(QFile::ReadOnly | QFile::Text))
+        throw runtime_error(csv.errorString().toStdString());
+
+    QTextStream in(&csv);
+    QStringList row;
+
+    int skipRows = options.skipRows;
+    while (readCSVRow(in, &row)) {
+        if (skipRows-- > 0)
+            continue;
+        if (row.empty())
+            continue;
+        ROMData::Address address = makeAddress(row[0]);
+        ROMData::Data data;
+        for (int k = 1; k < row.length(); ++ k) {
+            DataBit bit = row[k].toInt();
+            data.append(bit);
+        }
+        rom->data[address] = data;
+    }
+
+    qDebug() << "rom entries" << rom->data.size() << rom->data;
+
+    return rom.release();
 
 }
 
