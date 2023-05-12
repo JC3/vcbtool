@@ -336,7 +336,9 @@ void MainWindow::on_btnNetlistGraph_clicked()
         Compiler::GraphResults r = c.buildGraphViz(s);
         ui_->txtNetlistOut->setPlainText(r.graphviz.join("\n"));
         if (r.stats.critpathlen != -1) {
-            QString str = QString("minmax=%1 maxmin=%2 crit=%3").arg(r.stats.minmaxtime).arg(r.stats.maxmintime).arg(r.stats.critpathlen);
+            QString str = QString("%4x%5, minmax=%1 maxmin=%2 crit=%3")
+                    .arg(r.stats.minmaxtime).arg(r.stats.maxmintime).arg(r.stats.critpathlen)
+                    .arg(bp.width()).arg(bp.height());
             ui_->lblGraphStats->setText(str);
         } else
             ui_->lblGraphStats->setText("-");
