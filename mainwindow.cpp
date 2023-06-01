@@ -207,6 +207,18 @@ void MainWindow::on_btnROMGenerate_clicked()
 
         QVector<quint64> data;
 
+        const auto parseInt = [](QString str) {
+            str = str.trimmed().toLower();
+            if (str.startsWith("0x"))
+                return str.mid(2).toInt(nullptr, 16);
+            else if (str.startsWith("0b"))
+                return str.mid(2).toInt(nullptr, 2);
+            else if (str.startsWith("0o"))
+                return str.mid(2).toInt(nullptr, 8);
+            else
+                return str.toInt();
+        };
+
         if (ui_->chkROMCSV->isChecked()) {
 
             if (romfile_ == "")
@@ -222,7 +234,7 @@ void MainWindow::on_btnROMGenerate_clicked()
                     continue;
                 if (row.empty())
                     continue;
-                int address = row[0].toInt();
+                int address = parseInt(row[0]);
                 if (address >= data.size())
                     data.resize(address + 1, 0);
                 quint64 value = 0;
@@ -445,7 +457,7 @@ void MainWindow::on_actAlwaysOnTop_toggled(bool checked)
 
 void MainWindow::on_btnROMCSVHelp_clicked()
 {
-    QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based decimal address of the entry. Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
+    QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based address of the entry (decimal, hexadecimal [0x...], binary [0b...], or octal [0o...]). Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
 }
 
 
