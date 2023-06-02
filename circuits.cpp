@@ -132,6 +132,8 @@ ROMData * ROMData::fromCSV (const QString &filename, const CSVOptions &options) 
                 else throw runtime_error("One of the binary addresses has an invalid character in it (only can accept 0, 1, or x).");
             }
             return addr;
+        } else if (str.startsWith("0o")) {
+            return ROMData::makeAddress(str.mid(2).toInt(nullptr, 8), options.addressBits);
         } else {
             return ROMData::makeAddress(str.toInt(), options.addressBits);
         }
