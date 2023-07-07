@@ -417,15 +417,6 @@ void MainWindow::doGenerateText () {
             { 2, Blueprint::LED }
         };
 
-        QString fontfile = fonts_[ui_->cbTextFont->currentText()].filename;
-        if (fontfile == "")
-            throw runtime_error("invalid internal font id");
-        QImage fontimage;
-        if (!fontimage.load(fontfile))
-            throw runtime_error(("couldn't load " + fontfile).toStdString());
-        QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
-        int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
-
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
         if (ui_->chkTextLogic->isChecked())
@@ -435,7 +426,30 @@ void MainWindow::doGenerateText () {
         if (ui_->chkTextDecoOff->isChecked())
             offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
+        Blueprint *bp;
+
+        if (ui_->btnFontBuiltIn->isChecked()) {
+
+            QString fontfile = fonts_[ui_->cbTextFont->currentText()].filename;
+            if (fontfile == "")
+                throw runtime_error("invalid internal font id");
+            QImage fontimage;
+            if (!fontimage.load(fontfile))
+                throw runtime_error(("couldn't load " + fontfile).toStdString());
+            QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
+            int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
+
+            bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
+
+        } else {
+
+            QFont font = ui_->cbSystemFont->currentFont();
+            int height = ui_->spnSystemFontHeight->value();
+
+            bp = Circuits::Text(font, height, text, logicInk, onInk, offInk);
+
+        }
+
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())
@@ -522,5 +536,29 @@ void MainWindow::on_btnMiscX11_clicked()
             "585858, 626262, 6c6c6c, 767676, 808080, 8a8a8a, 949494, 9e9e9e, "
             "a8a8a8, b2b2b2, bcbcbc, c6c6c6, d0d0d0, dadada, e4e4e4, eeeeee";
     ui_->txtMisc->setPlainText(palette);
+}
+
+
+void MainWindow::on_cbSystemFont_activated(int index)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_spnSystemFontHeight_valueChanged(int arg1)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_btnFontSystem_toggled(bool checked)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_btnFontBuiltIn_toggled(bool checked)
+{
+    doGenerateText();
 }
 

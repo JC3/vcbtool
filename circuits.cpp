@@ -1,4 +1,6 @@
 #include "circuits.h"
+#include <QFont>
+#include <QPainter>
 #include <QDebug>
 #include <stdexcept>
 
@@ -185,6 +187,56 @@ Blueprint * Text (QImage font, QString fontCharset, int kerning, QString text, B
                     QRgb srcpix = font.pixel(srcx, srcy);
                     if (qRed(srcpix) < 128) bp->setPixel(layer, dstx, dsty, ink);
                 }
+            }
+        }
+    }
+
+    return bp;
+
+}
+
+
+Blueprint * Text (QFont font, int fontHeight, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
+
+    // === generate font image ===
+
+    font.setPixelSize(fontHeight);
+    font.setStyleStrategy(QFont::NoAntialias);
+    font.setHintingPreference(QFont::PreferFullHinting);
+
+    QRect rcText = QFontMetrics(font).boundingRect(text);
+    QImage textImage(rcText.size(), QImage::Format_RGB888);
+
+    {
+        QPainter p(&textImage);
+        p.setRenderHint(QPainter::Antialiasing, false);
+        p.setRenderHint(QPainter::TextAntialiasing, false);
+        p.fillRect(textImage.rect(), Qt::black);
+        p.setPen(Qt::white);
+        p.setFont(font);
+        p.drawText(textImage.rect(), Qt::AlignHCenter | Qt::AlignVCenter | Qt::TextSingleLine, text);
+    }
+
+    //textImage.save("debug-fontimage.png");
+
+    // === now copy it to every layer ===
+
+    QVector<QPair<Blueprint::Layer,Blueprint::Ink> > layerInks;
+    layerInks.append({Blueprint::Logic, logicInk});
+    layerInks.append({Blueprint::DecoOn, decoOnInk});
+    layerInks.append({Blueprint::DecoOff, decoOffInk});
+
+    Blueprint *bp = new Blueprint(textImage.width(), textImage.height());
+
+    for (auto layerInk : layerInks) {
+        const Blueprint::Layer layer = layerInk.first;
+        const Blueprint::Ink ink = layerInk.second;
+        if (!ink.isValid())
+            continue;
+        for (int y = 0; y < textImage.height(); ++ y) {
+            for (int x = 0; x < textImage.width(); ++ x) {
+                QRgb srcpix = textImage.pixel(x, y);
+                if (qRed(srcpix) > 128) bp->setPixel(layer, x, y, ink);
             }
         }
     }

@@ -18,7 +18,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tabConvert">
        <attribute name="title">
@@ -433,7 +433,14 @@
         <string>Generate Text</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
-        <item row="2" column="0" colspan="2">
+        <item row="6" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="txtTextBP">
+          <property name="placeholderText">
+           <string>Blueprint</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_6">
           <property name="rightMargin">
            <number>7</number>
@@ -605,27 +612,17 @@
           </item>
          </layout>
         </item>
-        <item row="0" column="0">
-         <widget class="QComboBox" name="cbTextFont">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
+        <item row="4" column="0" colspan="2">
          <widget class="QCheckBox" name="chkTextAutoCopy">
           <property name="text">
            <string>Auto copy to clipboard as you type</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="0" column="0" colspan="2">
          <widget class="QLineEdit" name="txtTextContent">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -635,12 +632,86 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QPlainTextEdit" name="txtTextBP">
-          <property name="placeholderText">
-           <string>Blueprint</string>
-          </property>
-         </widget>
+        <item row="1" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QRadioButton" name="btnFontBuiltIn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Built In Font</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">grpFontChoice</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cbTextFont">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="btnFontSystem">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>System Font</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">grpFontChoice</string>
+            </attribute>
+           </widget>
+          </item>
+          <item>
+           <widget class="QFontComboBox" name="cbSystemFont">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spnSystemFontHeight">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>system font height</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>12</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -962,5 +1033,6 @@
  <connections/>
  <buttongroups>
   <buttongroup name="grpConvertLayer"/>
+  <buttongroup name="grpFontChoice"/>
  </buttongroups>
 </ui>
