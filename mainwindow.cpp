@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTextStream>
+#include <QDesktopServices>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -177,6 +178,18 @@ void MainWindow::on_btnROMGenerate_clicked()
         /*
         QVector<quint64> data;
 
+        const auto parseInt = [](QString str) {
+            str = str.trimmed().toLower();
+            if (str.startsWith("0x"))
+                return str.mid(2).toInt(nullptr, 16);
+            else if (str.startsWith("0b"))
+                return str.mid(2).toInt(nullptr, 2);
+            else if (str.startsWith("0o"))
+                return str.mid(2).toInt(nullptr, 8);
+            else
+                return str.toInt();
+        };
+
         if (ui_->chkROMCSV->isChecked()) {
 
             if (romfile_ == "")
@@ -192,7 +205,7 @@ void MainWindow::on_btnROMGenerate_clicked()
                     continue;
                 if (row.empty())
                     continue;
-                int address = row[0].toInt();
+                int address = parseInt(row[0]);
                 if (address >= data.size())
                     data.resize(address + 1, 0);
                 quint64 value = 0;
@@ -376,15 +389,6 @@ void MainWindow::doGenerateText () {
             { 2, Blueprint::LED }
         };
 
-        QString fontfile = fonts_[ui_->cbTextFont->currentText()].filename;
-        if (fontfile == "")
-            throw runtime_error("invalid internal font id");
-        QImage fontimage;
-        if (!fontimage.load(fontfile))
-            throw runtime_error(("couldn't load " + fontfile).toStdString());
-        QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
-        int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
-
         QString text = ui_->txtTextContent->text();
         Blueprint::Ink logicInk, onInk, offInk;
         if (ui_->chkTextLogic->isChecked())
@@ -394,7 +398,30 @@ void MainWindow::doGenerateText () {
         if (ui_->chkTextDecoOff->isChecked())
             offInk = ui_->clrTextDecoOff->selectedColor();
 
-        Blueprint *bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
+        Blueprint *bp;
+
+        if (ui_->btnFontBuiltIn->isChecked()) {
+
+            QString fontfile = fonts_[ui_->cbTextFont->currentText()].filename;
+            if (fontfile == "")
+                throw runtime_error("invalid internal font id");
+            QImage fontimage;
+            if (!fontimage.load(fontfile))
+                throw runtime_error(("couldn't load " + fontfile).toStdString());
+            QString charset = fonts_[ui_->cbTextFont->currentText()].charset;
+            int kerning = fonts_[ui_->cbTextFont->currentText()].kerning;
+
+            bp = Circuits::Text(fontimage, charset, kerning, text, logicInk, onInk, offInk);
+
+        } else {
+
+            QFont font = ui_->cbSystemFont->currentFont();
+            int height = ui_->spnSystemFontHeight->value();
+
+            bp = Circuits::Text(font, height, text, logicInk, onInk, offInk);
+
+        }
+
         ui_->txtTextBP->setPlainText(bp->bpString());
 
         if (ui_->chkTextAutoCopy->isChecked())
@@ -416,7 +443,7 @@ void MainWindow::on_actAlwaysOnTop_toggled(bool checked)
 
 void MainWindow::on_btnROMCSVHelp_clicked()
 {
-    QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based decimal address of the entry. Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
+    QMessageBox::information(this, "CSV File Format", "Each row represents an entry. The first column must contain the 0-based address of the entry (decimal, hexadecimal [0x...], binary [0b...], or octal [0o...]). Each remaining column contains a 0 or a 1. The last column will be the LSB of the data.");
 }
 
 
@@ -481,5 +508,41 @@ void MainWindow::on_btnMiscX11_clicked()
             "585858, 626262, 6c6c6c, 767676, 808080, 8a8a8a, 949494, 9e9e9e, "
             "a8a8a8, b2b2b2, bcbcbc, c6c6c6, d0d0d0, dadada, e4e4e4, eeeeee";
     ui_->txtMisc->setPlainText(palette);
+}
+
+
+void MainWindow::on_cbSystemFont_activated(int)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_spnSystemFontHeight_valueChanged(int)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_btnFontSystem_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_btnFontBuiltIn_toggled(bool)
+{
+    doGenerateText();
+}
+
+
+void MainWindow::on_actLatestRelease_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/releases"));
+}
+
+
+void MainWindow::on_actBugReports_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/issues/new"));
 }
 

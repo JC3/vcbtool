@@ -49,6 +49,18 @@ private slots:
 
     void on_btnConvertEmoji_clicked();
 
+    void on_cbSystemFont_activated(int index);
+
+    void on_spnSystemFontHeight_valueChanged(int arg1);
+
+    void on_btnFontSystem_toggled(bool checked);
+
+    void on_btnFontBuiltIn_toggled(bool checked);
+
+    void on_actLatestRelease_triggered();
+
+    void on_actBugReports_triggered();
+
 private:
 
     struct FontDesc {
