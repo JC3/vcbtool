@@ -57,6 +57,10 @@ private slots:
 
     void on_btnFontBuiltIn_toggled(bool checked);
 
+    void on_actLatestRelease_triggered();
+
+    void on_actBugReports_triggered();
+
 private:
 
     struct FontDesc {

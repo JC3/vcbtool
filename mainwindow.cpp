@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QTextStream>
+#include <QDesktopServices>
 #include <stdexcept>
 #include "circuits.h"
 #include "compiler.h"
@@ -539,26 +540,38 @@ void MainWindow::on_btnMiscX11_clicked()
 }
 
 
-void MainWindow::on_cbSystemFont_activated(int index)
+void MainWindow::on_cbSystemFont_activated(int)
 {
     doGenerateText();
 }
 
 
-void MainWindow::on_spnSystemFontHeight_valueChanged(int arg1)
+void MainWindow::on_spnSystemFontHeight_valueChanged(int)
 {
     doGenerateText();
 }
 
 
-void MainWindow::on_btnFontSystem_toggled(bool checked)
+void MainWindow::on_btnFontSystem_toggled(bool)
 {
     doGenerateText();
 }
 
 
-void MainWindow::on_btnFontBuiltIn_toggled(bool checked)
+void MainWindow::on_btnFontBuiltIn_toggled(bool)
 {
     doGenerateText();
+}
+
+
+void MainWindow::on_actLatestRelease_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/releases"));
+}
+
+
+void MainWindow::on_actBugReports_triggered()
+{
+    QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/issues/new"));
 }
 

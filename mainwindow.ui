@@ -1008,7 +1008,15 @@
     </property>
     <addaction name="actAlwaysOnTop"/>
    </widget>
+   <widget class="QMenu" name="menuLinks">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actLatestRelease"/>
+    <addaction name="actBugReports"/>
+   </widget>
    <addaction name="menuOptions"/>
+   <addaction name="menuLinks"/>
   </widget>
   <action name="actAlwaysOnTop">
    <property name="checkable">
@@ -1019,6 +1027,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actLatestRelease">
+   <property name="text">
+    <string>Latest &amp;Release...</string>
+   </property>
+  </action>
+  <action name="actBugReports">
+   <property name="text">
+    <string>Report &amp;Bug / Request Feature...</string>
    </property>
   </action>
  </widget>
