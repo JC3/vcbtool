@@ -1007,6 +1007,7 @@
      <string>&amp;Options</string>
     </property>
     <addaction name="actAlwaysOnTop"/>
+    <addaction name="actStyleEditor"/>
    </widget>
    <widget class="QMenu" name="menuLinks">
     <property name="title">
@@ -1037,6 +1038,11 @@
   <action name="actBugReports">
    <property name="text">
     <string>Report &amp;Bug / Request Feature...</string>
+   </property>
+  </action>
+  <action name="actStyleEditor">
+   <property name="text">
+    <string>Style Editor</string>
    </property>
   </action>
  </widget>

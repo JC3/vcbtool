@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "blueprint.h"
+#include "styleeditordialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -13,7 +14,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(bool debugMode, QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -34,32 +35,20 @@ private slots:
     void on_clrTextDecoOn_colorChanged(const QColor &);
     void on_clrTextDecoOff_colorChanged(const QColor &);
     void on_actAlwaysOnTop_toggled(bool checked);
-
     void on_chkROMCSV_toggled(bool checked);
-
     void on_btnROMCSVHelp_clicked();
-
     void on_btnMiscGray8_clicked();
-
     void on_btnMiscRGB332_clicked();
-
     void on_cbAddress0_activated(int index);
-
     void on_btnMiscX11_clicked();
-
     void on_btnConvertEmoji_clicked();
-
     void on_cbSystemFont_activated(int index);
-
     void on_spnSystemFontHeight_valueChanged(int arg1);
-
     void on_btnFontSystem_toggled(bool checked);
-
     void on_btnFontBuiltIn_toggled(bool checked);
-
     void on_actLatestRelease_triggered();
-
     void on_actBugReports_triggered();
+    void on_actStyleEditor_triggered();
 
 private:
 
@@ -71,6 +60,7 @@ private:
     };
 
     Ui::MainWindow *ui_;
+    StyleEditorDialog *sedit_;
     QString romfile_;
     QByteArray romdata_;
     QMap<QString,FontDesc> fonts_;

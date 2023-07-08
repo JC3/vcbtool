@@ -18,17 +18,20 @@ SOURCES += \
     colorselector.cpp \
     compiler.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    styleeditordialog.cpp
 
 HEADERS += \
     blueprint.h \
     circuits.h \
     colorselector.h \
     compiler.h \
-    mainwindow.h
+    mainwindow.h \
+    styleeditordialog.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    styleeditordialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

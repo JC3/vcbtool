@@ -16,12 +16,15 @@
 
 using std::runtime_error;
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(bool debugMode, QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
+    , sedit_(nullptr)
 {
 
     ui_->setupUi(this);
+    ui_->actStyleEditor->setVisible(debugMode);
+    ui_->actStyleEditor->setEnabled(debugMode);
     ui_->lblROMWarning->setText("");
     on_chkROMCSV_toggled(ui_->chkROMCSV->isChecked());
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
@@ -573,5 +576,16 @@ void MainWindow::on_actLatestRelease_triggered()
 void MainWindow::on_actBugReports_triggered()
 {
     QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/issues/new"));
+}
+
+
+void MainWindow::on_actStyleEditor_triggered()
+{
+    if (sedit_) {
+        sedit_->activateWindow();
+    } else {
+        sedit_ = new StyleEditorDialog(this);
+    }
+    sedit_->show();
 }
 
