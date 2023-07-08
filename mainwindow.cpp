@@ -581,6 +581,8 @@ void MainWindow::on_actBugReports_triggered()
 
 void MainWindow::on_actStyleEditor_triggered()
 {
+    ui_->clrTextDecoOff->setUseStyleSheet(true);
+    ui_->clrTextDecoOn->setUseStyleSheet(true);
     if (sedit_) {
         sedit_->activateWindow();
     } else {
