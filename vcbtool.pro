@@ -1,5 +1,5 @@
 QMAKE_TARGET_DESCRIPTION = "VCB Tool"
-VERSION = 1.8.1
+VERSION = 1.8.2
 DEFINES += VCBTOOL_VERSION='\\"$$VERSION\\"'
 
 QT       += core gui
@@ -57,4 +57,5 @@ DISTFILES += \
     font_fixedsys12.png \
     font_topaz.png \
     font_topaz_sans.png \
-    fonts.json
+    fonts.json \
+    stylesheet-dev.css

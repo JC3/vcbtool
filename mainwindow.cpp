@@ -27,7 +27,7 @@ MainWindow::MainWindow(bool debugMode, QWidget *parent)
     ui_->actStyleEditor->setEnabled(debugMode);
     ui_->lblROMWarning->setText("");
     on_chkROMCSV_toggled(ui_->chkROMCSV->isChecked());
-    setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
+    setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION + "-beta-1");
 
     int defFontIndex = 0;
     QFile fontsJson("fonts.json");
