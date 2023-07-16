@@ -50,6 +50,8 @@ private slots:
     void on_actBugReports_triggered();
     void on_actStyleEditor_triggered();
 
+    void on_btnViewGraph_clicked();
+
 private:
 
     struct FontDesc {

@@ -591,3 +591,16 @@ void MainWindow::on_actStyleEditor_triggered()
     sedit_->show();
 }
 
+
+void MainWindow::on_btnViewGraph_clicked()
+{
+    QString graph = ui_->txtNetlistOut->toPlainText().trimmed();
+    if (graph == "") {
+        QMessageBox::warning(this, "Nope", "Please generate a graph first.");
+        return;
+    }
+    QString encoded = QString::fromLatin1(QUrl::toPercentEncoding(graph));
+    QUrl url("https://dreampuf.github.io/GraphvizOnline/#" + encoded);
+    QDesktopServices::openUrl(url);
+}
+
