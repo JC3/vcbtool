@@ -449,6 +449,11 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
             label += "*";
         attrs["label"] = label;
 
+        if (settings.highlightloops && cgraph[id]->isloop) {
+            attrs["fillcolor"] = "yellow";
+            attrs["style"] = "filled";
+        }
+
         if (settings.ioclusters) {
             switch (cgraph[id]->purpose) {
             case Node::Input: cluster = "input"; break;

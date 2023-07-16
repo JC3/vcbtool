@@ -119,7 +119,8 @@ public:
         PosMode positions;
         float scale;
         bool squareio;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false) { }
+        bool highlightloops;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false), highlightloops(true) { }
     };
 
     struct GraphResults {
