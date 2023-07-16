@@ -57,4 +57,5 @@ DISTFILES += \
     font_fixedsys12.png \
     font_topaz.png \
     font_topaz_sans.png \
-    fonts.json
+    fonts.json \
+    stylesheet-dev.css
