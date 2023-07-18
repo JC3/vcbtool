@@ -784,6 +784,23 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkExtraCrosses">
+            <property name="text">
+             <string>Extra Crosses</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkCheckLoops">
+            <property name="text">
+             <string>Check For Loops</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1080,7 +1097,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="grpFontChoice"/>
   <buttongroup name="grpConvertLayer"/>
+  <buttongroup name="grpFontChoice"/>
  </buttongroups>
 </ui>

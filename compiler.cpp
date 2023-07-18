@@ -424,16 +424,6 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
     ComplexGraph cgraph = buildComplexGraph(graph);
 
-    for (Node *node : cgraph.values()) {
-        node->purpose = Node::Other;
-        if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
-            if (node->from.empty() && !node->to.empty())
-                node->purpose = Node::Input;
-            else if (node->to.empty() && !node->from.empty())
-                node->purpose = Node::Output;
-        }
-    }
-
     if (settings.timings || settings.timinglabels)
         results.stats = computeTimings(cgraph);
 
@@ -560,6 +550,9 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
 
     ComplexGraph nodes = buildComplexGraph(sgraph_);
 
+    if (settings.checkLoops)
+        computeTimings(nodes); // will set isloop flags
+
     QStringList results;
 
     const auto print = [&] (const Node *node, QString message) {
@@ -582,12 +575,14 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
     const bool CheckTraces = settings.checkTraces;
 
     for (Node *node : nodes.values()) {
+        // unused traces
         if (CheckTraces) {
             if (IsTrace(node->type) && node->to.empty())
                 print(node, "nothing reads from this trace");
             if (IsTrace(node->type) && node->from.empty())
                 print(node, "nothing writes to this trace");
         }
+        // gate input counts
         inputcheck(node, Buffer, 1, 1);
         inputcheck(node, And, GateMinIn, 1);
         inputcheck(node, Or, GateMinIn, 1);
@@ -607,6 +602,10 @@ QStringList Compiler::analyzeCircuit (const AnalysisSettings &settings) const {
         inputcheck(node, Wifi1, 1, 1);
         inputcheck(node, Wifi2, 1, 1);
         inputcheck(node, Wifi3, 1, 1);
+        // loops
+        if (settings.checkLoops && node->isloop) {
+            print(node, "circuit loop");
+        }
     }
 
     deleteComplexGraph(nodes);
@@ -625,21 +624,42 @@ QStringList Compiler::analyzeBlueprint (const AnalysisSettings &settings, const 
         results.append(QString("%1, %2: %3").arg(x).arg(y).arg(message));
     };
 
-    if (settings.checkCrosses) {
-        // super hacky, screw performance
-        for (int y = 0; y < blueprint->height(); ++ y) {
-            for (int x = 0; x < blueprint->width(); ++ x) {
-                try {
-                    Component c = Comp(blueprint->get(x, y));
-                    if (IsEmpty(c) || IsCross(c)) continue;
-                    const auto sameas = [&](int px, int py) { Component o = Comp(blueprint->get(px, py)); return Same(c, o); };
-                    if (sameas(x,y-1) && sameas(x,y+1) &&
-                        sameas(x-1,y) && sameas(x+1,y) &&
-                        !sameas(x-1,y-1) && !sameas(x+1,y-1) && !sameas(x-1,y+1) && !sameas(x+1,y+1))
-                    {
-                        print(x, y, "potentially missing cross");
-                    }
-                } catch (...) { /* out of range coords; skip */ }
+    // super hacky, screw performance
+    for (int y = 0; y < blueprint->height(); ++ y) {
+        for (int x = 0; x < blueprint->width(); ++ x) {
+            Component c = Comp(blueprint->get(x, y));
+            if (settings.checkCrosses) {
+                const auto sameas = [&](int px, int py) { Component o = Comp(blueprint->get(px, py)); return Same(c, o); };
+                if (!IsEmpty(c) && !IsCross(c)) {
+                    try {
+                        if (sameas(x,y-1) && sameas(x,y+1) &&
+                            sameas(x-1,y) && sameas(x+1,y) &&
+                            !sameas(x-1,y-1) && !sameas(x+1,y-1) && !sameas(x-1,y+1) && !sameas(x+1,y+1))
+                        {
+                            print(x, y, "potentially missing cross");
+                        }
+                    } catch (...) { /* out of range coords; skip */ }
+                }
+            }
+            if (settings.rogueCrosses) {
+                const auto empty = [&](int px, int py) {
+                    if (px < 0 || py < 0 || px >= blueprint->width() || py >= blueprint->height())
+                        return true;
+                    Component o = Comp(blueprint->get(px, py));
+                    return IsEmpty(o);
+                };
+                if (IsCross(c)) {
+                    int neighbors = 0;
+                    bool t, b, l, r;
+                    neighbors += (t = empty(x,y-1)) ? 0 : 1;
+                    neighbors += (b = empty(x,y+1)) ? 0 : 1;
+                    neighbors += (r = empty(x+1,y)) ? 0 : 1;
+                    neighbors += (l = empty(x-1,y)) ? 0 : 1;
+                    if (neighbors < 2)
+                        print(x, y, "unnecessary cross");
+                    else if (neighbors == 2)
+                        print(x, y, ((t && b) || (l && r)) ? "unnecessary cross" : "oddly placed cross");
+                }
             }
         }
     }
@@ -666,6 +686,17 @@ Compiler::ComplexGraph Compiler::buildComplexGraph (const SimpleGraph &sgraph) {
         Node::connect(from, to);
     }
 
+    // guess inputs and outputs
+    for (Node *node : nodes.values()) {
+        node->purpose = Node::Other;
+        if (IsTrace(node->type) || IsLatch(node->type) || IsLED(node->type)) {
+            if (node->from.empty() && !node->to.empty())
+                node->purpose = Node::Input;
+            else if (node->to.empty() && !node->from.empty())
+                node->purpose = Node::Output;
+        }
+    }
+
     return nodes;
 
 }
@@ -675,19 +706,18 @@ Compiler::TimingStats Compiler::computeTimings (ComplexGraph &graph) {
 
     TimingStats stats;
 
-    // naive implementation, will freeze on loops!
     const std::function<void(Node*,int,int)> compute = [&compute] (Node *node, int tickmin, int tickmax) {
         if (node->hit) {
             node->isloop = true;
             //qDebug() << "node" << node->id << Desc(node->type) << "is loop; breaking...";
             return;
         }
-        // test early walk abort
+        // early walk abort
         if (node->mintiming >= 0 && tickmin >= node->mintiming && tickmax <= node->maxtiming) {
             // then this particular path isn't going to affect any future min/max, so we can just abort.
             return;
         }
-        // end test
+        // end early walk abort
         node->mintiming = (node->mintiming >= 0 ? std::min(node->mintiming, tickmin) : tickmin);
         node->maxtiming = std::max(node->maxtiming, tickmax);
         int nexttickmin = IsTrace(node->type) ? node->mintiming : (node->mintiming + 1);
