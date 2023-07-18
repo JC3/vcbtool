@@ -625,21 +625,42 @@ QStringList Compiler::analyzeBlueprint (const AnalysisSettings &settings, const 
         results.append(QString("%1, %2: %3").arg(x).arg(y).arg(message));
     };
 
-    if (settings.checkCrosses) {
-        // super hacky, screw performance
-        for (int y = 0; y < blueprint->height(); ++ y) {
-            for (int x = 0; x < blueprint->width(); ++ x) {
-                try {
-                    Component c = Comp(blueprint->get(x, y));
-                    if (IsEmpty(c) || IsCross(c)) continue;
-                    const auto sameas = [&](int px, int py) { Component o = Comp(blueprint->get(px, py)); return Same(c, o); };
-                    if (sameas(x,y-1) && sameas(x,y+1) &&
-                        sameas(x-1,y) && sameas(x+1,y) &&
-                        !sameas(x-1,y-1) && !sameas(x+1,y-1) && !sameas(x-1,y+1) && !sameas(x+1,y+1))
-                    {
-                        print(x, y, "potentially missing cross");
-                    }
-                } catch (...) { /* out of range coords; skip */ }
+    // super hacky, screw performance
+    for (int y = 0; y < blueprint->height(); ++ y) {
+        for (int x = 0; x < blueprint->width(); ++ x) {
+            Component c = Comp(blueprint->get(x, y));
+            if (settings.checkCrosses) {
+                const auto sameas = [&](int px, int py) { Component o = Comp(blueprint->get(px, py)); return Same(c, o); };
+                if (!IsEmpty(c) && !IsCross(c)) {
+                    try {
+                        if (sameas(x,y-1) && sameas(x,y+1) &&
+                            sameas(x-1,y) && sameas(x+1,y) &&
+                            !sameas(x-1,y-1) && !sameas(x+1,y-1) && !sameas(x-1,y+1) && !sameas(x+1,y+1))
+                        {
+                            print(x, y, "potentially missing cross");
+                        }
+                    } catch (...) { /* out of range coords; skip */ }
+                }
+            }
+            if (settings.rogueCrosses) {
+                const auto empty = [&](int px, int py) {
+                    if (px < 0 || py < 0 || px >= blueprint->width() || py >= blueprint->height())
+                        return true;
+                    Component o = Comp(blueprint->get(px, py));
+                    return IsEmpty(o);
+                };
+                if (IsCross(c)) {
+                    int neighbors = 0;
+                    bool t, b, l, r;
+                    neighbors += (t = empty(x,y-1)) ? 0 : 1;
+                    neighbors += (b = empty(x,y+1)) ? 0 : 1;
+                    neighbors += (r = empty(x+1,y)) ? 0 : 1;
+                    neighbors += (l = empty(x-1,y)) ? 0 : 1;
+                    if (neighbors < 2)
+                        print(x, y, "unnecessary cross");
+                    else if (neighbors == 2)
+                        print(x, y, ((t && b) || (l && r)) ? "unnecessary cross" : "oddly placed cross");
+                }
             }
         }
     }
