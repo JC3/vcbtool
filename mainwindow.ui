@@ -794,6 +794,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkCheckLoops">
+            <property name="text">
+             <string>Check For Loops</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="verticalSpacer_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>

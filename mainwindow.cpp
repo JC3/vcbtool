@@ -324,6 +324,7 @@ void MainWindow::on_btnNetlistCheck_clicked()
         s.checkGates = ui_->chk2InputGates->isChecked();
         s.checkCrosses = ui_->chkMissingCrosses->isChecked();
         s.rogueCrosses = ui_->chkExtraCrosses->isChecked();
+        s.checkLoops = ui_->chkCheckLoops->isChecked();
         //ui_->txtNetlistOut->setPlainText(c.analyzeCircuit(s).join("\n"));
         QStringList messages = c.analyzeCircuit(s);
         messages += Compiler::analyzeBlueprint(s, &bp);

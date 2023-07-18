@@ -135,7 +135,8 @@ public:
         bool checkGates;
         bool checkCrosses;
         bool rogueCrosses;
-        AnalysisSettings () : checkTraces(true), checkGates(true), checkCrosses(true), rogueCrosses(true) { }
+        bool checkLoops;
+        AnalysisSettings () : checkTraces(true), checkGates(true), checkCrosses(true), rogueCrosses(true), checkLoops(true) { }
     };
 
     QStringList analyzeCircuit (const AnalysisSettings &settings) const;
