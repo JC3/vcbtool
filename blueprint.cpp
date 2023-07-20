@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <QCryptographicHash>
 #include <QDebug>
+#include <QElapsedTimer>
 
 using std::runtime_error;
 
@@ -84,6 +85,9 @@ Blueprint::Blueprint (QString bpString, QObject *parent) :
     bpString_(bpString)
 {
 
+    QElapsedTimer timer;
+    timer.start();
+
     static const auto getInt = [] (const QByteArray &d, int offset, int size) {
         if (offset + size > d.size())
             throw runtime_error("Unexpected end of blueprint string.");
@@ -108,13 +112,13 @@ Blueprint::Blueprint (QString bpString, QObject *parent) :
     quint32 bpWidth = getInt(bp, 9, 4);
     quint32 bpHeight = getInt(bp, 13, 4);
 
-    qDebug() << bpVersion << bpWidth << bpHeight;
+    //qDebug() << bpVersion << bpWidth << bpHeight;
     int pos = 17;
     while (pos < bp.size()) {
         quint32 blockSize = getInt(bp, pos, 4);
         quint32 blockId = getInt(bp, pos + 4, 4);
         quint32 dataSize = getInt(bp, pos + 8, 4);
-        qDebug()  << "block" << blockSize << blockId << dataSize;
+        //qDebug()  << "block" << blockSize << blockId << dataSize;
         if (blockId == 0) {
             QByteArray data(dataSize, 0);
             size_t result = ZSTD_decompress(data.data(), data.size(), bp.data() + pos + 12, blockSize - 12);
@@ -128,6 +132,9 @@ Blueprint::Blueprint (QString bpString, QObject *parent) :
 
     if (layers_.empty())
         throw runtime_error("Invalid blueprint string -- no layers found.");
+
+    qint64 nsecs = timer.nsecsElapsed();
+    qDebug() << "blueprint decoded: " << (double)nsecs / 1000000.0 << "ms";
 
 }
 
