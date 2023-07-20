@@ -44,7 +44,6 @@ void Compiler::compileBlueprint (const Blueprint *bp) {
     // --- initialize
 
     // translate qcolors to compiler component ids
-    QImage bpImage = bp->layer(Blueprint::Logic);
     QVector<QVector<Component> > logic(height);
     for (int y = 0; y < height; ++ y) {
         logic[y] = QVector<Component>(width);
