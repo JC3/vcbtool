@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>709</width>
-    <height>477</height>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -872,6 +872,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="chkIECSymbols">
+            <property name="text">
+             <string>IEC Gate Symbols</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3">
             <item>
              <widget class="QLabel" name="label_2">
@@ -1097,7 +1104,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="grpConvertLayer"/>
   <buttongroup name="grpFontChoice"/>
+  <buttongroup name="grpConvertLayer"/>
  </buttongroups>
 </ui>

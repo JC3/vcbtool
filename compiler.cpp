@@ -405,6 +405,61 @@ QString Compiler::Desc (Component comp) {
 
 }
 
+QString Compiler::IECLabel (Component comp) {
+
+    static const QMap<Component,QString> s = {
+        { Empty, "Empty" },
+        { Cross, "Cross" },
+        { Tunnel, "Tunnel" },
+        { Mesh, "Mesh" },
+        { Bus1, "Bus1" },
+        { Bus2, "Bus2" },
+        { Bus3, "Bus3" },
+        { Bus4, "Bus4" },
+        { Bus5, "Bus5" },
+        { Bus6, "Bus6" },
+        { Write, "Trace" },
+        { Read, "Trace" },
+        { Trace1, "Trace" },
+        { Trace2, "Trace" },
+        { Trace3, "Trace" },
+        { Trace4, "Trace" },
+        { Trace5, "Trace" },
+        { Trace6, "Trace" },
+        { Trace7, "Trace" },
+        { Trace8, "Trace" },
+        { Trace9, "Trace" },
+        { Trace10, "Trace" },
+        { Trace11, "Trace" },
+        { Trace12, "Trace" },
+        { Trace13, "Trace" },
+        { Trace14, "Trace" },
+        { Trace15, "Trace" },
+        { Trace16, "Trace" },
+        { Buffer, "1" },
+        { And, "&" },
+        { Or, "≥1" },
+        { Nor, "≥1" },
+        { Not, "1" },
+        { Nand, "&" },
+        { Xor, "=1" },
+        { Xnor, "=1" },
+        { LatchOn, "LatchOn" },
+        { LatchOff, "LatchOff" },
+        { Clock, "Clock" },
+        { LED, "LED" },
+        { Timer, "Timer" },
+        { Random, "Random" },
+        { Break, "Break" },
+        { Wifi0, "Wifi0" },
+        { Wifi1, "Wifi1" },
+        { Wifi2, "Wifi2" },
+        { Wifi3, "Wifi3" }
+    };
+
+    return s[comp];
+
+}
 
 Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
@@ -431,7 +486,11 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
         QMap<QString,QString> attrs;
         QString cluster;
 
-        QString label = Desc(graph.entities[id]);
+        QString label;
+        if (settings.iecsymbols)
+            label = IECLabel(graph.entities[id]);
+        else
+            label = Desc(graph.entities[id]);
         if (settings.timinglabels && cgraph[id]->mintiming >= 0 && cgraph[id]->maxtiming >= 0)
             label += QString(" (%1-%2)").arg(cgraph[id]->mintiming).arg(cgraph[id]->maxtiming);
         if (cgraph[id]->isloop)
@@ -459,6 +518,11 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
                 attrs["shape"] = "box";
         }
 
+        if (settings.iecsymbols) {
+            if (cgraph[id]->purpose == Node::Other)
+                attrs["shape"] = "square";
+        }
+
         if (settings.positions != GraphSettings::None) {
             float posx = (id % bpwidth_) * settings.scale;
             float posy = (bpheight_ - id / bpwidth_) * settings.scale;
@@ -484,11 +548,19 @@ Compiler::GraphResults Compiler::buildGraphViz (GraphSettings settings) const {
 
         QMap<QString,QString> attrs;
 
+        const auto isInverted = [] (Component type) {
+            return type == Not || type == Nand || type == Nor || type == Xnor;
+        };
+
         {
             const Node *from = cgraph[conn.first];
             const Node *to = cgraph[conn.second];
             if (from->critpath && to->critpath && from->maxtiming >= to->maxtiming - 1)
                 attrs["color"] = "red";
+            if (isInverted(from->type)) {
+                attrs["dir"] = "both";
+                attrs["arrowtail"] = "odot";
+            }
         }
 
         QStringList attrstrs;

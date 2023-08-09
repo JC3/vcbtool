@@ -99,6 +99,7 @@ public:
 
     static Component Comp (Blueprint::Ink ink);
     static QString Desc (Component comp);
+    static QString IECLabel (Component comp);
 
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
@@ -120,7 +121,8 @@ public:
         float scale;
         bool squareio;
         bool highlightloops;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false), highlightloops(true) { }
+        bool iecsymbols;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false), highlightloops(true), iecsymbols(false) { }
     };
 
     struct GraphResults {

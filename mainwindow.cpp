@@ -351,6 +351,7 @@ void MainWindow::on_btnNetlistGraph_clicked()
         s.positions = (Compiler::GraphSettings::PosMode)ui_->cbPositions->currentIndex();
         s.scale = ui_->txtPosScale->text().toFloat();
         s.squareio = ui_->chkSquareIO->isChecked();
+        s.iecsymbols = ui_->chkIECSymbols->isChecked();
         Compiler::GraphResults r = c.buildGraphViz(s);
         ui_->txtNetlistOut->setPlainText(r.graphviz.join("\n"));
         if (r.stats.critpathlen != -1) {
