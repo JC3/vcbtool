@@ -99,6 +99,7 @@ public:
 
     static Component Comp (Blueprint::Ink ink);
     static QString Desc (Component comp);
+    static QString IECLabel (Component comp);
 
     explicit Compiler (const Blueprint *bp, QObject *parent = nullptr);
 
@@ -119,7 +120,9 @@ public:
         PosMode positions;
         float scale;
         bool squareio;
-        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false) { }
+        bool highlightloops;
+        bool iecsymbols;
+        GraphSettings () : compressed(false), ioclusters(false), timings(false), timinglabels(false), positions(None), scale(1.0f), squareio(false), highlightloops(true), iecsymbols(false) { }
     };
 
     struct GraphResults {
@@ -133,7 +136,9 @@ public:
         bool checkTraces;
         bool checkGates;
         bool checkCrosses;
-        AnalysisSettings () : checkTraces(true), checkGates(true), checkCrosses(true) { }
+        bool rogueCrosses;
+        bool checkLoops;
+        AnalysisSettings () : checkTraces(true), checkGates(true), checkCrosses(true), rogueCrosses(true), checkLoops(true) { }
     };
 
     QStringList analyzeCircuit (const AnalysisSettings &settings) const;

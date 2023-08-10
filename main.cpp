@@ -11,7 +11,11 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationName("jasonc");
     QApplication::setApplicationName("vcbtool");
     QApplication a(argc, argv);
-    MainWindow w;
+    bool debugMode = false;
+    for (int a = 1; a < argc; ++ a)
+        if (!strcmp(argv[a], "--debug"))
+            debugMode = true;
+    MainWindow w(debugMode);
     w.show();
     return a.exec();
 }

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>709</width>
-    <height>477</height>
+    <height>525</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -720,17 +720,17 @@
         <string>Analysis Tools</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="0" column="3">
-         <widget class="QPlainTextEdit" name="txtNetlistOut"/>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="lblGraphStats">
-          <property name="text">
-           <string>-</string>
+        <item row="0" column="0" rowspan="3">
+         <widget class="QPlainTextEdit" name="txtNetlistBP">
+          <property name="plainText">
+           <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
+          </property>
+          <property name="placeholderText">
+           <string>Blueprint string</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="1" rowspan="2">
+        <item row="0" column="1" rowspan="3">
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
            <spacer name="verticalSpacer_5">
@@ -780,6 +780,23 @@
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkExtraCrosses">
+            <property name="text">
+             <string>Extra Crosses</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkCheckLoops">
+            <property name="text">
+             <string>Check For Loops</string>
             </property>
            </widget>
           </item>
@@ -851,6 +868,13 @@
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkIECSymbols">
+            <property name="text">
+             <string>IEC Gate Symbols</string>
             </property>
            </widget>
           </item>
@@ -929,13 +953,37 @@
           </item>
          </layout>
         </item>
-        <item row="0" column="0" rowspan="2">
-         <widget class="QPlainTextEdit" name="txtNetlistBP">
-          <property name="plainText">
-           <string>VCB+AAAAxuWfA/oCAAAAHgAAACsAAAEzAAAAAAAAFCgotS/9YCgT7QgAhAI4TUf/TTg+/6GYVlNVcgAuR13//8ZjoVWXrnT/AL//ZGpXVpOhJEF6fKjAFbMG0IISkSFuAxJgMggBDREwKIIgIEKQIoQIERIBETChIY4IHDNcmQepcXQOsro1vjb+hF3H7+ltDuenMf5c0Ke/tHA/UTs1281X+xAshg/jm19C4U2vlEdZ84d4VdAA96Sy5vOulu771sS9PMM7Uy2H/1/nT6uxc6H6Nn6TncyHQ+bvVIjd96Y+VMWTzePkdhIWXidnNEcFXElkewMQX10r5hOTwwrZZ3hj8KyumjJiq6ilxGUEnDaU/h7G9LMIj2M7hlg34YPF4YW1CSW/0qjzPGgz0NqxRu5UjPBO7Hd1Cq8vL6/7R2NsVtKm61kGAAAAHwAAAAEAABQoKLUv/WAoE00AABAAAAEAI9QDLAAAAB8AAAACAAAUKCi1L/1gKBNNAAAQAAABACPUAyw=</string>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="btnViewGraph">
+          <property name="text">
+           <string>View Graph Online...</string>
           </property>
-          <property name="placeholderText">
-           <string>Blueprint string</string>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="2" colspan="2">
+         <widget class="QPlainTextEdit" name="txtNetlistOut">
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2" colspan="2">
+         <widget class="QLabel" name="lblGraphStats">
+          <property name="text">
+           <string>-</string>
           </property>
          </widget>
         </item>
@@ -1007,6 +1055,7 @@
      <string>&amp;Options</string>
     </property>
     <addaction name="actAlwaysOnTop"/>
+    <addaction name="actStyleEditor"/>
    </widget>
    <widget class="QMenu" name="menuLinks">
     <property name="title">
@@ -1039,6 +1088,11 @@
     <string>Report &amp;Bug / Request Feature...</string>
    </property>
   </action>
+  <action name="actStyleEditor">
+   <property name="text">
+    <string>Style Editor</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1050,7 +1104,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="grpConvertLayer"/>
   <buttongroup name="grpFontChoice"/>
+  <buttongroup name="grpConvertLayer"/>
  </buttongroups>
 </ui>

@@ -8,12 +8,15 @@ class ColorSelector : public QLabel {
 public:
     explicit ColorSelector(QWidget *parent = nullptr);
     QColor selectedColor () const;
+    void setUseStyleSheet (bool use);
 public slots:
     void setSelectedColor (QColor color);
 signals:
     void colorChanged (QColor color);
 protected:
     void mousePressEvent (QMouseEvent *ev) override;
+private:
+    bool usecss_;
 };
 
 #endif // COLORSELECTOR_H

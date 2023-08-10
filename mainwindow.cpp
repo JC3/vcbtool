@@ -16,12 +16,15 @@
 
 using std::runtime_error;
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(bool debugMode, QWidget *parent)
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
+    , sedit_(nullptr)
 {
 
     ui_->setupUi(this);
+    ui_->actStyleEditor->setVisible(debugMode);
+    ui_->actStyleEditor->setEnabled(debugMode);
     ui_->lblROMWarning->setText("");
     on_chkROMCSV_toggled(ui_->chkROMCSV->isChecked());
     setWindowTitle(windowTitle() + " " + VCBTOOL_VERSION);
@@ -291,6 +294,8 @@ void MainWindow::on_btnNetlistCheck_clicked()
         s.checkTraces = ui_->chkUnconnectedTraces->isChecked();
         s.checkGates = ui_->chk2InputGates->isChecked();
         s.checkCrosses = ui_->chkMissingCrosses->isChecked();
+        s.rogueCrosses = ui_->chkExtraCrosses->isChecked();
+        s.checkLoops = ui_->chkCheckLoops->isChecked();
         //ui_->txtNetlistOut->setPlainText(c.analyzeCircuit(s).join("\n"));
         QStringList messages = c.analyzeCircuit(s);
         messages += Compiler::analyzeBlueprint(s, &bp);
@@ -317,6 +322,7 @@ void MainWindow::on_btnNetlistGraph_clicked()
         s.positions = (Compiler::GraphSettings::PosMode)ui_->cbPositions->currentIndex();
         s.scale = ui_->txtPosScale->text().toFloat();
         s.squareio = ui_->chkSquareIO->isChecked();
+        s.iecsymbols = ui_->chkIECSymbols->isChecked();
         Compiler::GraphResults r = c.buildGraphViz(s);
         ui_->txtNetlistOut->setPlainText(r.graphviz.join("\n"));
         if (r.stats.critpathlen != -1) {
@@ -544,5 +550,31 @@ void MainWindow::on_actLatestRelease_triggered()
 void MainWindow::on_actBugReports_triggered()
 {
     QDesktopServices::openUrl(QUrl("https://github.com/JC3/vcbtool/issues/new"));
+}
+
+
+void MainWindow::on_actStyleEditor_triggered()
+{
+    ui_->clrTextDecoOff->setUseStyleSheet(true);
+    ui_->clrTextDecoOn->setUseStyleSheet(true);
+    if (sedit_) {
+        sedit_->activateWindow();
+    } else {
+        sedit_ = new StyleEditorDialog(this);
+    }
+    sedit_->show();
+}
+
+
+void MainWindow::on_btnViewGraph_clicked()
+{
+    QString graph = ui_->txtNetlistOut->toPlainText().trimmed();
+    if (graph == "") {
+        QMessageBox::warning(this, "Nope", "Please generate a graph first.");
+        return;
+    }
+    QString encoded = QString::fromLatin1(QUrl::toPercentEncoding(graph));
+    QUrl url("https://dreampuf.github.io/GraphvizOnline/#" + encoded);
+    QDesktopServices::openUrl(url);
 }
 

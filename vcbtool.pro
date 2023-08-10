@@ -1,5 +1,5 @@
 QMAKE_TARGET_DESCRIPTION = "VCB Tool"
-VERSION = 1.8.1
+VERSION = 1.8.4
 DEFINES += VCBTOOL_VERSION='\\"$$VERSION\\"'
 
 QT       += core gui
@@ -18,17 +18,20 @@ SOURCES += \
     colorselector.cpp \
     compiler.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    styleeditordialog.cpp
 
 HEADERS += \
     blueprint.h \
     circuits.h \
     colorselector.h \
     compiler.h \
-    mainwindow.h
+    mainwindow.h \
+    styleeditordialog.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    styleeditordialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -54,4 +57,5 @@ DISTFILES += \
     font_fixedsys12.png \
     font_topaz.png \
     font_topaz_sans.png \
-    fonts.json
+    fonts.json \
+    stylesheet-dev.css

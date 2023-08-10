@@ -17,6 +17,14 @@ void ColorSelector::setSelectedColor (QColor color) {
     QPalette p = palette();
     p.setColor(backgroundRole(), color);
     setPalette(p);
+    if (usecss_)
+        setStyleSheet(QString("#%4 { background:rgb(%1,%2,%3); }")
+                      .arg(color.red())
+                      .arg(color.green())
+                      .arg(color.blue())
+                      .arg(objectName()));
+    else
+        setStyleSheet(QString());
     emit colorChanged(color);
 }
 
@@ -27,3 +35,9 @@ void ColorSelector::mousePressEvent (QMouseEvent *ev) {
             setSelectedColor(color);
     }
 }
+
+void ColorSelector::setUseStyleSheet (bool use) {
+     usecss_ = use;
+     setSelectedColor(selectedColor());
+}
+
