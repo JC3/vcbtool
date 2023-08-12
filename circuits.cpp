@@ -139,7 +139,7 @@ Blueprint * ROM (int addressBits, int dataBits, ROMDataLSBSide dataLSB, ROMAddre
 
 Blueprint * Text (QImage font, QString fontCharset, int kerning, QString text, Blueprint::Ink logicInk, Blueprint::Ink decoOnInk, Blueprint::Ink decoOffInk) {
 
-    qDebug().noquote() << fontCharset;
+    //qDebug().noquote() << fontCharset;
 
     // ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _.:! +-*/\= "' |^& ()[]<> @~#,?%{}`¬
     //constexpr char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789.!:+-*/\\=()[]|^&_<>\"'@~#,?%{}`\xAC";
